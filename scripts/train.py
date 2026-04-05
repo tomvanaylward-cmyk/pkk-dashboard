@@ -8,11 +8,13 @@ import os
 import json
 import zipfile
 import io
+import re
 import requests
 import pandas as pd
 import numpy as np
 from datetime import datetime, timezone
 from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import LabelEncoder
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
@@ -21,33 +23,43 @@ from sklearn.metrics import classification_report, roc_auc_score
 GITHUB_API = "https://api.github.com/repos/vegvesen/periodisk-kjoretoy-kontroll/contents/"
 RAW_BASE   = "https://raw.githubusercontent.com/vegvesen/periodisk-kjoretoy-kontroll/main/"
 
-# Fuzzy keyword matching — any column whose name CONTAINS these substrings
-KEYWORD_MAP = {
-    "brand":    ["merke"],
-    "model":    ["modell"],
-    "fuel":     ["drivstoff"],
-    "km":       ["kilometer"],
-    "reg_first":["f\u00f8rste gang registrert i nor", "registrert i nor"],
-    "reg_no":   ["f\u00f8rste gang registrert"],
-    "ctrl_type":["kontrolltype"],
-    "approved": ["godkjent"],
-    "unsafe":   ["trafikkfarlig"],
-    "fylke":    ["fylke"],
-    "weight":   ["totalvekt", "vektgruppe"],
+# ── column name normalisation ──────────────────────────────────────────────
+COL_BRAND    = None   # resolved at runtime
+COL_MODEL    = None
+COL_FUEL     = None
+COL_KM       = None
+COL_AGE_REG  = None   # "Første gang registrert"
+COL_AGE_NO   = None   # "Første gang registrert i Norge"
+COL_TYPE     = None   # P / E
+COL_APPROVED = None   # godkjent flag
+COL_UNSAFE   = None   # trafikkfarlig feil
+COL_FYLKE    = None
+COL_DATE     = None   # control month/year
+COL_WEIGHT   = None
+
+CANDIDATE_MAP = {
+    "brand":    ["kjøretøymerke", "merke", "brand"],
+    "model":    ["kjøretøy modell", "modell", "model"],
+    "fuel":     ["drivstofftype", "fuel"],
+    "km":       ["kilometerstand", "km", "odometer"],
+    "reg_first":["første gang registrert", "first registered"],
+    "reg_no":   ["første gang registrert i norge", "first registered norway"],
+    "ctrl_type":["pkk kontrolltype", "kontrolltype", "control type"],
+    "approved": ["om kjøretøyet ble godkjent", "godkjent", "approved"],
+    "unsafe":   ["om det ble avdekket trafikkfarlig feil", "trafikkfarlig", "unsafe"],
+    "fylke":    ["fylke der kjøretøyet er kontrollert", "fylke", "county"],
+    "date":     ["måned og år da kjøretøyet ble kontrollert", "kontrolldato", "date"],
+    "weight":   ["tillatt totalvekt", "weight class", "vekt"],
 }
 
 def resolve_cols(df):
-    """Match columns by substring — handles extra spaces, casing, encoding variants."""
     cols_lower = {c.lower().strip(): c for c in df.columns}
     mapping = {}
-    print("  All columns found:", list(df.columns))
-    for key, keywords in KEYWORD_MAP.items():
-        for col_l, col_orig in cols_lower.items():
-            for kw in keywords:
-                if kw in col_l:
-                    if key not in mapping:   # first match wins
-                        mapping[key] = col_orig
-    print("  Column mapping:", mapping)
+    for key, candidates in CANDIDATE_MAP.items():
+        for cand in candidates:
+            if cand in cols_lower:
+                mapping[key] = cols_lower[cand]
+                break
     return mapping
 
 
@@ -74,23 +86,11 @@ def read_zip(content):
         for member in z.namelist():
             if member.lower().endswith(".csv"):
                 with z.open(member) as f:
-                    raw = f.read()
-                # try multiple encodings and separators
-                for enc in ["utf-8", "latin-1", "utf-8-sig"]:
-                    for sep in [";", ",", "\t"]:
-                        try:
-                            df = pd.read_csv(
-                                io.BytesIO(raw), sep=sep, encoding=enc,
-                                low_memory=False, on_bad_lines="skip"
-                            )
-                            if len(df.columns) >= 5:   # sanity check
-                                frames.append(df)
-                                break
-                        except Exception:
-                            continue
-                    else:
-                        continue
-                    break
+                    try:
+                        df = pd.read_csv(f, sep=";", encoding="utf-8", low_memory=False)
+                    except UnicodeDecodeError:
+                        df = pd.read_csv(f, sep=";", encoding="latin-1", low_memory=False)
+                    frames.append(df)
     if not frames:
         return None
     return pd.concat(frames, ignore_index=True)
