@@ -2,8 +2,11 @@ name: Retrain PKK model & deploy
 
 on:
   schedule:
-    - cron: "0 3 * * *"   # 03:00 UTC every day
-  workflow_dispatch:        # manual trigger from GitHub UI
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 permissions:
   contents: write
@@ -23,30 +26,18 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Cache pip dependencies
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('scripts/requirements.txt') }}
-
       - name: Install dependencies
         run: pip install -r scripts/requirements.txt
 
       - name: Run training pipeline
         run: python scripts/train.py
 
-      - name: Check if coefficients changed
-        id: diff
-        run: |
-          git diff --quiet docs/coefficients.json && echo "changed=false" >> $GITHUB_OUTPUT || echo "changed=true" >> $GITHUB_OUTPUT
-
       - name: Commit updated coefficients
-        if: steps.diff.outputs.changed == 'true'
         run: |
           git config user.name  "pkk-bot"
           git config user.email "pkk-bot@users.noreply.github.com"
           git add docs/coefficients.json
-          git commit -m "chore: retrain model $(date -u +%Y-%m-%d)"
+          git diff --staged --quiet || git commit -m "chore: retrain model $(date -u +%Y-%m-%d)"
           git push
 
       - name: Deploy to GitHub Pages
