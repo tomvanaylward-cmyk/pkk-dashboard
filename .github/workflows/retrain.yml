@@ -38,7 +38,9 @@ jobs:
         run: |
           git config user.name  "pkk-bot"
           git config user.email "pkk-bot@users.noreply.github.com"
+          git stash
           git pull --rebase origin main
+          git stash pop
           git add docs/coefficients.json
           git diff --staged --quiet || git commit -m "chore: retrain model $(date -u +%Y-%m-%d)"
           git push
