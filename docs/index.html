@@ -8,443 +8,413 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-:root {
-  --bg:#f5f4f0;--surface:#ffffff;--border:#e2e0d8;--text:#1a1917;--muted:#6b6960;
-  --accent:#c84b2f;--pass:#2d7a3a;--fail:#b33030;--warn:#8a5c00;
-  --pass-bg:#e8f5eb;--fail-bg:#fbeaea;--warn-bg:#fdf3dc;
-  --mono:'DM Mono',monospace;--display:'Syne',sans-serif;--body:'Inter',sans-serif;
-}
+:root{--bg:#f5f4f0;--surface:#fff;--border:#e2e0d8;--text:#1a1917;--muted:#6b6960;--accent:#c84b2f;--pass:#2d7a3a;--fail:#b33030;--warn:#8a5c00;--pass-bg:#e8f5eb;--fail-bg:#fbeaea;--warn-bg:#fdf3dc;--mono:'DM Mono',monospace;--display:'Syne',sans-serif;--body:'Inter',sans-serif}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh}
 header{border-bottom:1px solid var(--border);background:var(--surface);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px}
-.logo{font-family:var(--display);font-weight:800;font-size:1.1rem;letter-spacing:-.02em}
-.logo span{color:var(--accent)}
+.logo{font-family:var(--display);font-weight:800;font-size:1.1rem;letter-spacing:-.02em}.logo span{color:var(--accent)}
 .meta-pill{font-family:var(--mono);font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 12px;color:var(--muted);display:flex;align-items:center;gap:6px}
 .dot-live{width:7px;height:7px;border-radius:50%;background:var(--pass);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 main{max-width:1100px;margin:0 auto;padding:2.5rem 1.5rem}
-.hero{margin-bottom:2.5rem}
-.hero h1{font-family:var(--display);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-bottom:.5rem}
-.hero p{color:var(--muted);font-size:.95rem;max-width:600px;line-height:1.6}
-.stats-row{display:flex;gap:12px;margin-bottom:2rem;flex-wrap:wrap}
-.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;min-width:150px}
-.stat-label{font-size:11px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
-.stat-val{font-family:var(--display);font-size:1.6rem;font-weight:700}
-.stat-sub{font-size:11px;color:var(--muted);margin-top:2px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.hero{margin-bottom:2rem}.hero h1{font-family:var(--display);font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-bottom:.5rem}
+.hero p{color:var(--muted);font-size:.9rem;max-width:600px;line-height:1.6}
+.stats-row{display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;min-width:130px}
+.stat-label{font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.stat-val{font-family:var(--display);font-size:1.4rem;font-weight:700}
+.stat-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 @media(max-width:700px){.grid2{grid-template-columns:1fr}}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
-.card-title{font-family:var(--display);font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:16px}
-.field{margin-bottom:14px}
-.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px;font-weight:500}
-select{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);font-family:var(--body);font-size:13px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6960' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
-select:focus{outline:2px solid var(--accent);outline-offset:2px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+.card-title{font-family:var(--display);font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:14px}
+.field{margin-bottom:12px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:500}
+select{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);font-family:var(--body);font-size:13px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6960' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
 .slider-wrap{display:flex;align-items:center;gap:10px}
 .slider-wrap input[type=range]{flex:1;-webkit-appearance:none;height:4px;background:var(--border);border-radius:2px;outline:none}
-.slider-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--accent)}
-.slider-out{font-family:var(--mono);font-size:12px;font-weight:500;min-width:68px;text-align:right;color:var(--text)}
-.result-area{text-align:center;padding:16px 0 8px}
-.prob-big{font-family:var(--display);font-size:3.5rem;font-weight:800;line-height:1;transition:color .4s}
-.prob-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.slider-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);cursor:pointer;border:2px solid var(--surface)}
+.slider-out{font-family:var(--mono);font-size:12px;font-weight:500;min-width:64px;text-align:right}
+.result-area{text-align:center;padding:14px 0 6px}
+.prob-big{font-family:var(--display);font-size:3.2rem;font-weight:800;line-height:1;transition:color .4s}
+.prob-sub{font-size:11px;color:var(--muted);margin-top:3px}
 .prob-bar-track{width:100%;height:8px;background:var(--bg);border-radius:4px;overflow:hidden;margin:10px 0 4px}
 .prob-bar-fill{height:100%;border-radius:4px;transition:width .5s,background .5s}
-.ci-wrap{display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0 4px}
-.ci-track{flex:1;max-width:200px;height:6px;background:var(--bg);border-radius:3px;position:relative}
-.ci-range{position:absolute;height:100%;border-radius:3px;transition:left .4s,width .4s,background .4s}
-.ci-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid currentColor;top:50%;transform:translate(-50%,-50%);transition:left .4s}
-.ci-labels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--muted);max-width:200px;margin:0 auto 2px}
-.ci-note{font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:4px}
-.verdict-badge{display:inline-block;font-size:12px;font-weight:500;padding:4px 12px;border-radius:20px;margin-top:6px;font-family:var(--mono)}
-.compare-card{margin-bottom:16px}
-.diff-text{font-size:13px;color:var(--muted);line-height:1.7;padding:12px 14px;background:var(--bg);border-radius:8px;margin-bottom:16px}
+.ci-row{display:flex;align-items:center;gap:8px;margin:4px 0}
+.ci-track{flex:1;height:6px;background:var(--bg);border-radius:3px;position:relative}
+.ci-range{position:absolute;height:100%;border-radius:3px;opacity:.35}
+.ci-dot{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid;top:50%;transform:translate(-50%,-50%)}
+.ci-lo,.ci-hi{font-family:var(--mono);font-size:10px;color:var(--muted);min-width:34px}
+.ci-lo{text-align:right}.ci-hi{text-align:left}
+.ci-note{font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:2px}
+.verdict-badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;margin-top:6px;font-family:var(--mono)}
+.diff-text{font-size:13px;color:var(--muted);line-height:1.7;padding:10px 12px;background:var(--bg);border-radius:8px;margin-bottom:14px}
 .diff-text strong{color:var(--text);font-weight:500}
-.chart-wrap{position:relative}
-.model-card{margin-bottom:16px}
 .coef-section{margin-bottom:14px}
-.coef-section-title{font-size:11px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
-.coef-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:5px}
-.coef-item{font-size:11px;padding:5px 8px;background:var(--bg);border-radius:5px}
-.coef-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
-.coef-key{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px}
-.coef-val{font-family:var(--mono);font-weight:500}
-.coef-val.pos{color:var(--pass)}
-.coef-val.neg{color:var(--fail)}
-.coef-ci-bar{height:3px;background:var(--border);border-radius:2px;position:relative;overflow:visible}
-.coef-ci-fill{position:absolute;height:100%;border-radius:2px}
-.coef-ci-text{font-size:9px;color:var(--muted);font-family:var(--mono);margin-top:2px}
+.coef-section-title{font-size:11px;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;border-bottom:0.5px solid var(--border);padding-bottom:4px}
+.coef-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:5px}
+.coef-item{font-size:11px;padding:6px 8px;background:var(--bg);border-radius:6px}
+.coef-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.coef-key{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
+.coef-val{font-family:var(--mono);font-weight:500;font-size:10px}
+.coef-val.pos{color:var(--pass)}.coef-val.neg{color:var(--fail)}
+.coef-bar-wrap{height:4px;background:var(--border);border-radius:2px;position:relative;margin-bottom:2px}
+.coef-bar-zero{position:absolute;left:50%;width:1px;height:100%;background:var(--muted);opacity:.4}
+.coef-bar-range{position:absolute;height:100%;border-radius:2px;opacity:.3}
+.coef-bar-mid{position:absolute;width:3px;height:100%;border-radius:1px;transform:translateX(-50%)}
+.coef-ci-text{font-size:9px;color:var(--muted);font-family:var(--mono)}
 footer{text-align:center;font-size:11px;color:var(--muted);padding:2rem 1rem;border-top:1px solid var(--border);margin-top:1rem;line-height:1.8}
 footer a{color:var(--muted)}
-.loading-overlay{text-align:center;padding:3rem;font-family:var(--mono);font-size:13px;color:var(--muted)}
-.error-box{background:var(--fail-bg);border:1px solid #e5b3b3;border-radius:8px;padding:16px;font-size:13px;color:var(--fail);font-family:var(--mono)}
+.loading-overlay,.error-box{text-align:center;padding:3rem;font-family:var(--mono);font-size:13px;color:var(--muted)}
+.error-box{background:var(--fail-bg);border:1px solid #e5b3b3;border-radius:8px;color:var(--fail);text-align:left;padding:16px}
+.fuel-legend{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.fuel-chip{font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:12px;border:1px solid var(--border);color:var(--muted)}
 </style>
 </head>
 <body>
 <header>
   <div class="logo">EU<span>kontroll</span>.no — PKK predictor</div>
-  <div class="meta-pill"><span class="dot-live"></span><span id="header-trained">loading model…</span></div>
+  <div class="meta-pill"><span class="dot-live"></span><span id="header-trained">loading…</span></div>
 </header>
 <main>
-  <div id="app-loading" class="loading-overlay">Loading model coefficients…</div>
+  <div id="app-loading" class="loading-overlay">Loading model…</div>
   <div id="app-error" class="error-box" style="display:none"></div>
   <div id="app" style="display:none">
     <div class="hero">
       <h1>Will your car pass the EU-kontroll?</h1>
-      <p>Logistic regression trained on Statens vegvesen's open PKK dataset. Retrained nightly via GitHub Actions. Confidence intervals via 30-sample bootstrap.</p>
+      <p>XGBoost model trained on Statens vegvesen's open PKK dataset. No regional bias — national pass rates only. Confidence intervals via 20-sample bootstrap.</p>
     </div>
     <div class="stats-row">
       <div class="stat-card"><div class="stat-label">Training samples</div><div class="stat-val" id="s-samples">—</div><div class="stat-sub">inspection records</div></div>
       <div class="stat-card"><div class="stat-label">AUC-ROC</div><div class="stat-val" id="s-auc">—</div><div class="stat-sub">model accuracy</div></div>
-      <div class="stat-card"><div class="stat-label">Dataset pass rate</div><div class="stat-val" id="s-passrate">—</div><div class="stat-sub">historical average</div></div>
-      <div class="stat-card"><div class="stat-label">Last retrained</div><div class="stat-val" id="s-date" style="font-size:1rem;padding-top:4px">—</div><div class="stat-sub">auto-updates nightly</div></div>
+      <div class="stat-card"><div class="stat-label">National pass rate</div><div class="stat-val" id="s-passrate">—</div><div class="stat-sub">all vehicles</div></div>
+      <div class="stat-card"><div class="stat-label">Model</div><div class="stat-val" style="font-size:1rem;padding-top:4px">XGBoost</div><div class="stat-sub" id="s-date">—</div></div>
     </div>
+
     <div class="grid2">
       <div class="card">
         <div class="card-title">Vehicle A</div>
         <div class="field"><label>Brand</label><select id="brandA"></select></div>
         <div class="field"><label>Fuel type</label><select id="fuelA"></select></div>
-        <div class="field"><label>Vehicle age — <span id="ageA-out">4</span> years</label><div class="slider-wrap"><input type="range" id="ageA" min="1" max="25" value="4" step="1"><span class="slider-out" id="ageA-disp">4 yr</span></div></div>
-        <div class="field"><label>Odometer — <span id="kmA-out">60 000</span> km</label><div class="slider-wrap"><input type="range" id="kmA" min="0" max="400" value="60" step="5"><span class="slider-out" id="kmA-disp">60k km</span></div></div>
+        <div class="field"><label>Age — <span id="ageA-out">4</span> years</label><div class="slider-wrap"><input type="range" id="ageA" min="1" max="25" value="4" step="1"><span class="slider-out" id="ageA-disp">4 yr</span></div></div>
+        <div class="field"><label>Odometer — <span id="kmA-out">60 000</span> km</label><div class="slider-wrap"><input type="range" id="kmA" min="0" max="400" value="60" step="5"><span class="slider-out" id="kmA-disp">60k</span></div></div>
         <div class="field"><label>Control type</label><select id="typeA"><option value="P">Periodisk (P)</option><option value="E">Etterkontroll (E)</option></select></div>
-        <div class="field"><label>Fylke</label><select id="fylkeA"></select></div>
         <div class="result-area">
           <div class="prob-big" id="probA">—</div>
           <div class="prob-sub">probability of passing</div>
           <div class="prob-bar-track"><div class="prob-bar-fill" id="barA"></div></div>
-          <div class="ci-labels" id="ciLabelsA"><span></span><span></span></div>
-          <div class="ci-wrap">
-            <div class="ci-track" id="ciTrackA">
+          <div class="ci-row">
+            <span class="ci-lo" id="ciLoA">—</span>
+            <div class="ci-track">
               <div class="ci-range" id="ciRangeA"></div>
               <div class="ci-dot" id="ciDotA"></div>
             </div>
+            <span class="ci-hi" id="ciHiA">—</span>
           </div>
           <div class="ci-note">95% confidence interval</div>
           <div class="verdict-badge" id="verdictA"></div>
         </div>
       </div>
+
       <div class="card">
         <div class="card-title">Vehicle B</div>
         <div class="field"><label>Brand</label><select id="brandB"></select></div>
         <div class="field"><label>Fuel type</label><select id="fuelB"></select></div>
-        <div class="field"><label>Vehicle age — <span id="ageB-out">4</span> years</label><div class="slider-wrap"><input type="range" id="ageB" min="1" max="25" value="4" step="1"><span class="slider-out" id="ageB-disp">4 yr</span></div></div>
-        <div class="field"><label>Odometer — <span id="kmB-out">60 000</span> km</label><div class="slider-wrap"><input type="range" id="kmB" min="0" max="400" value="60" step="5"><span class="slider-out" id="kmB-disp">60k km</span></div></div>
+        <div class="field"><label>Age — <span id="ageB-out">4</span> years</label><div class="slider-wrap"><input type="range" id="ageB" min="1" max="25" value="4" step="1"><span class="slider-out" id="ageB-disp">4 yr</span></div></div>
+        <div class="field"><label>Odometer — <span id="kmB-out">60 000</span> km</label><div class="slider-wrap"><input type="range" id="kmB" min="0" max="400" value="60" step="5"><span class="slider-out" id="kmB-disp">60k</span></div></div>
         <div class="field"><label>Control type</label><select id="typeB"><option value="P">Periodisk (P)</option><option value="E">Etterkontroll (E)</option></select></div>
-        <div class="field"><label>Fylke</label><select id="fylkeB"></select></div>
         <div class="result-area">
           <div class="prob-big" id="probB">—</div>
           <div class="prob-sub">probability of passing</div>
           <div class="prob-bar-track"><div class="prob-bar-fill" id="barB"></div></div>
-          <div class="ci-labels" id="ciLabelsB"><span></span><span></span></div>
-          <div class="ci-wrap">
-            <div class="ci-track" id="ciTrackB">
+          <div class="ci-row">
+            <span class="ci-lo" id="ciLoB">—</span>
+            <div class="ci-track">
               <div class="ci-range" id="ciRangeB"></div>
               <div class="ci-dot" id="ciDotB"></div>
             </div>
+            <span class="ci-hi" id="ciHiB">—</span>
           </div>
           <div class="ci-note">95% confidence interval</div>
           <div class="verdict-badge" id="verdictB"></div>
         </div>
       </div>
     </div>
-    <div class="card compare-card">
+
+    <div class="card" style="margin-bottom:14px">
       <div class="card-title">Comparison</div>
       <div class="diff-text" id="diffText">—</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:500">Pass probability vs. age (at current odometer)</div>
-      <div class="chart-wrap" style="height:220px"><canvas id="ageChart"></canvas></div>
+      <div style="position:relative;height:210px"><canvas id="ageChart"></canvas></div>
     </div>
-    <div class="card model-card">
-      <div class="card-title">Model coefficients with 95% confidence intervals</div>
+
+    <div class="card" style="margin-bottom:14px">
+      <div class="card-title">Marginal effects — pass probability difference vs. baseline</div>
+      <div style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:12px">Shows how much each category raises or lowers pass probability compared to the most common value in that group. Bars show 95% CI.</div>
       <div id="coefSections"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Defect chapter importance (XGBoost feature importance)</div>
+      <div style="position:relative;height:260px"><canvas id="defectChart"></canvas></div>
     </div>
   </div>
 </main>
 <footer>
-  Data: <a href="https://github.com/vegvesen/periodisk-kjoretoy-kontroll" target="_blank">Statens vegvesen / periodisk-kjoretoy-kontroll</a> &nbsp;·&nbsp;
-  License: CC BY 4.0 &nbsp;·&nbsp; Model retrained nightly by GitHub Actions &nbsp;·&nbsp; Not affiliated with Statens vegvesen
+  Data: <a href="https://github.com/vegvesen/periodisk-kjoretoy-kontroll" target="_blank">Statens vegvesen / periodisk-kjoretoy-kontroll</a> &nbsp;·&nbsp; License: CC BY 4.0 &nbsp;·&nbsp; Model retrained nightly &nbsp;·&nbsp; Not affiliated with Statens vegvesen
 </footer>
 <script>
 let COEF = null;
 let ageChartInst = null;
+let defectChartInst = null;
 
-async function loadCoefficients() {
-  const r = await fetch('./coefficients.json');
-  if (!r.ok) throw new Error('Could not load coefficients.json — has the model been trained yet?');
-  return r.json();
+async function init() {
+  try {
+    const r = await fetch('./coefficients.json');
+    if (!r.ok) throw new Error('Could not load coefficients.json');
+    COEF = await r.json();
+    document.getElementById('app-loading').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    populateSelects();
+    renderMeta();
+    renderCoefs();
+    renderDefectChart();
+    document.querySelectorAll('select,input[type=range]').forEach(el => {
+      el.addEventListener('input', () => { syncSliders(); update(); });
+    });
+    update();
+  } catch(e) {
+    document.getElementById('app-loading').style.display = 'none';
+    const el = document.getElementById('app-error');
+    el.style.display = 'block';
+    el.textContent = 'Error: ' + e.message + '. Make sure the GitHub Actions workflow has run at least once to generate coefficients.json.';
+  }
 }
 
-function sigmoid(x){return 1/(1+Math.exp(-x));}
-function scaleNum(val,mean,std){return (val-mean)/std;}
+function syncSliders() {
+  ['A','B'].forEach(s => {
+    const age = document.getElementById('age'+s).value;
+    const km  = document.getElementById('km'+s).value;
+    document.getElementById('age'+s+'-out').textContent  = age;
+    document.getElementById('age'+s+'-disp').textContent = age + ' yr';
+    document.getElementById('km'+s+'-out').textContent   = (km*1000).toLocaleString('no-NO');
+    document.getElementById('km'+s+'-disp').textContent  = km + 'k';
+  });
+}
 
 function getCoef(obj, key) {
   if (!obj || !(key in obj)) return {coef:0, lo:0, hi:0};
   const v = obj[key];
-  if (typeof v === 'object') return v;
-  return {coef:v, lo:v, hi:v};
+  if (typeof v === 'object' && 'coef' in v) return v;
+  return {coef: +v, lo: +v, hi: +v};
 }
 
-function predict(brand, fuel, age, km, ctrlType, fylke) {
-  const c = COEF;
-  const bc = getCoef(c.brand, brand);
-  const fc = getCoef(c.fuel, fuel);
-  const tc = getCoef(c.ctrl_type, ctrlType);
-  const fyc = getCoef(c.fylke, fylke);
-  const kmS = scaleNum(km*1000, c.scaler.km_mean, c.scaler.km_std);
-  const ageS = scaleNum(age, c.scaler.age_mean, c.scaler.age_std);
-  const numC = c.numeric.km_scaled*kmS + c.numeric.age_scaled*ageS;
+function predict(brand, fuel, age, km, ctrlType) {
+  const base = COEF.pass_rate || 0.65;
+  const bc  = getCoef(COEF.brand, brand);
+  const fc  = getCoef(COEF.fuel, fuel);
+  const tc  = getCoef(COEF.ctrl_type, ctrlType);
 
-  const mid = c.intercept + bc.coef + fc.coef + tc.coef + fyc.coef + numC;
-  const lo  = c.intercept + bc.lo  + fc.lo  + tc.lo  + fyc.lo  + numC;
-  const hi  = c.intercept + bc.hi  + fc.hi  + tc.hi  + fyc.hi  + numC;
+  // age & km: linear interpolation from correlations
+  const nc = COEF.numeric || {};
+  const ageNorm  = (age - 12.72) / 5.92;
+  const kmNorm   = (km * 1000 - 174496) / 93517;
+  const ageEff   = (nc.age_corr || -0.15) * ageNorm * 0.3;
+  const kmEff    = (nc.km_corr  || -0.12) * kmNorm  * 0.3;
 
-  return {
-    mid: sigmoid(mid),
-    lo:  sigmoid(Math.min(lo, hi)),
-    hi:  sigmoid(Math.max(lo, hi)),
-  };
+  const mid = Math.max(0.01, Math.min(0.99, base + bc.coef + fc.coef + tc.coef + ageEff + kmEff));
+  const lo  = Math.max(0.01, Math.min(0.99, base + bc.lo  + fc.lo  + tc.lo  + ageEff + kmEff));
+  const hi  = Math.max(0.01, Math.min(0.99, base + bc.hi  + fc.hi  + tc.hi  + ageEff + kmEff));
+
+  return { mid, lo: Math.min(lo,hi), hi: Math.max(lo,hi) };
 }
 
-function probColor(p){
-  if(p>=0.78) return 'var(--pass)';
-  if(p>=0.60) return 'var(--warn)';
+function probColor(p) {
+  if (p >= 0.78) return 'var(--pass)';
+  if (p >= 0.60) return 'var(--warn)';
   return 'var(--fail)';
 }
-function verdict(p){
-  if(p>=0.78) return {text:'Likely to pass',bg:'var(--pass-bg)',col:'var(--pass)'};
-  if(p>=0.60) return {text:'Uncertain',bg:'var(--warn-bg)',col:'var(--warn)'};
-  return {text:'Risk of failing',bg:'var(--fail-bg)',col:'var(--fail)'};
+function verdict(p) {
+  if (p >= 0.78) return {text:'Likely to pass', bg:'var(--pass-bg)', col:'var(--pass)'};
+  if (p >= 0.60) return {text:'Uncertain',      bg:'var(--warn-bg)', col:'var(--warn)'};
+  return              {text:'Risk of failing',  bg:'var(--fail-bg)', col:'var(--fail)'};
 }
 
-function getVals(s){
+function getVals(s) {
   return {
     brand:    document.getElementById('brand'+s).value,
     fuel:     document.getElementById('fuel'+s).value,
     age:      +document.getElementById('age'+s).value,
     km:       +document.getElementById('km'+s).value,
     ctrlType: document.getElementById('type'+s).value,
-    fylke:    document.getElementById('fylke'+s).value,
   };
 }
 
-function renderCI(s, p) {
-  const loP = (p.lo*100).toFixed(1);
-  const hiP = (p.hi*100).toFixed(1);
-  const midPct = (p.mid*100).toFixed(1);
+function renderResult(s, p) {
+  const pct = (p.mid*100).toFixed(1)+'%';
   const col = probColor(p.mid);
+  document.getElementById('prob'+s).textContent = pct;
+  document.getElementById('prob'+s).style.color = col;
+  document.getElementById('bar'+s).style.width = pct;
+  document.getElementById('bar'+s).style.background = col;
 
+  const loPct  = (p.lo*100).toFixed(1);
+  const hiPct  = (p.hi*100).toFixed(1);
+  const midPct = (p.mid*100).toFixed(1);
+  document.getElementById('ciLo'+s).textContent = loPct+'%';
+  document.getElementById('ciHi'+s).textContent = hiPct+'%';
   const ciRange = document.getElementById('ciRange'+s);
   const ciDot   = document.getElementById('ciDot'+s);
-  const ciLabels = document.getElementById('ciLabels'+s);
-
-  const leftPct  = (p.lo*100).toFixed(1) + '%';
-  const widthPct = ((p.hi - p.lo)*100).toFixed(1) + '%';
-  const midLeft  = (p.mid*100).toFixed(1) + '%';
-
-  ciRange.style.left = leftPct;
-  ciRange.style.width = widthPct;
+  ciRange.style.left = loPct+'%';
+  ciRange.style.width = (p.hi-p.lo)*100+'%';
   ciRange.style.background = col;
-  ciRange.style.opacity = '0.3';
-  ciDot.style.left = midLeft;
-  ciDot.style.color = col;
+  ciDot.style.left = midPct+'%';
   ciDot.style.borderColor = col;
-  ciLabels.children[0].textContent = loP + '%';
-  ciLabels.children[1].textContent = hiP + '%';
+
+  const v = verdict(p.mid);
+  const vEl = document.getElementById('verdict'+s);
+  vEl.textContent = v.text;
+  vEl.style.background = v.bg;
+  vEl.style.color = v.col;
 }
 
-function update(){
+function update() {
   const A = getVals('A'), B = getVals('B');
-  const pA = predict(A.brand, A.fuel, A.age, A.km, A.ctrlType, A.fylke);
-  const pB = predict(B.brand, B.fuel, B.age, B.km, B.ctrlType, B.fylke);
-
-  ['A','B'].forEach(s => {
-    const p = s==='A' ? pA : pB;
-    const pct = (p.mid*100).toFixed(1)+'%';
-    document.getElementById('prob'+s).textContent = pct;
-    document.getElementById('prob'+s).style.color = probColor(p.mid);
-    document.getElementById('bar'+s).style.width = pct;
-    document.getElementById('bar'+s).style.background = probColor(p.mid);
-    renderCI(s, p);
-    const v = verdict(p.mid);
-    const el = document.getElementById('verdict'+s);
-    el.textContent = v.text;
-    el.style.background = v.bg;
-    el.style.color = v.col;
-  });
+  const pA = predict(A.brand, A.fuel, A.age, A.km, A.ctrlType);
+  const pB = predict(B.brand, B.fuel, B.age, B.km, B.ctrlType);
+  renderResult('A', pA);
+  renderResult('B', pB);
 
   const diff = (pB.mid - pA.mid)*100;
   const labelA = document.getElementById('brandA').options[document.getElementById('brandA').selectedIndex].text;
   const labelB = document.getElementById('brandB').options[document.getElementById('brandB').selectedIndex].text;
-  let diffHtml;
-  if(Math.abs(diff)<0.5){
-    diffHtml = `<strong>${labelA}</strong> and <strong>${labelB}</strong> have nearly identical predicted pass probabilities.`;
+  let html;
+  if (Math.abs(diff) < 0.5) {
+    html = `<strong>${labelA}</strong> and <strong>${labelB}</strong> have nearly identical predicted pass probabilities.`;
   } else {
     const winner = diff>0?labelB:labelA;
     const loser  = diff>0?labelA:labelB;
-    const pWin   = diff>0?(pB.mid*100).toFixed(1):(pA.mid*100).toFixed(1);
-    const pLose  = diff>0?(pA.mid*100).toFixed(1):(pB.mid*100).toFixed(1);
-    diffHtml = `<strong>${winner}</strong> is predicted to pass more often — <strong>${pWin}%</strong> vs <strong>${pLose}%</strong> for <strong>${loser}</strong>, a difference of <strong>${Math.abs(diff).toFixed(1)} percentage points</strong>.`;
+    const pW = diff>0?(pB.mid*100).toFixed(1):(pA.mid*100).toFixed(1);
+    const pL = diff>0?(pA.mid*100).toFixed(1):(pB.mid*100).toFixed(1);
+    html = `<strong>${winner}</strong> is predicted to pass more often — <strong>${pW}%</strong> vs <strong>${pL}%</strong> for <strong>${loser}</strong>, a difference of <strong>${Math.abs(diff).toFixed(1)} pp</strong>.`;
   }
-  document.getElementById('diffText').innerHTML = diffHtml;
+  document.getElementById('diffText').innerHTML = html;
   drawAgeChart(A, B, labelA, labelB);
 }
 
-function drawAgeChart(A, B, labelA, labelB){
+function drawAgeChart(A, B, lA, lB) {
   const ages = Array.from({length:25},(_,i)=>i+1);
-  const dsA = ages.map(a=>+((predict(A.brand,A.fuel,a,A.km,A.ctrlType,A.fylke).mid)*100).toFixed(1));
-  const dsB = ages.map(a=>+((predict(B.brand,B.fuel,a,B.km,B.ctrlType,B.fylke).mid)*100).toFixed(1));
-  const loA = ages.map(a=>+((predict(A.brand,A.fuel,a,A.km,A.ctrlType,A.fylke).lo)*100).toFixed(1));
-  const hiA = ages.map(a=>+((predict(A.brand,A.fuel,a,A.km,A.ctrlType,A.fylke).hi)*100).toFixed(1));
-  const loB = ages.map(a=>+((predict(B.brand,B.fuel,a,B.km,B.ctrlType,B.fylke).lo)*100).toFixed(1));
-  const hiB = ages.map(a=>+((predict(B.brand,B.fuel,a,B.km,B.ctrlType,B.fylke).hi)*100).toFixed(1));
+  const midA = ages.map(a=>+(predict(A.brand,A.fuel,a,A.km,A.ctrlType).mid*100).toFixed(1));
+  const midB = ages.map(a=>+(predict(B.brand,B.fuel,a,B.km,B.ctrlType).mid*100).toFixed(1));
+  const hiA  = ages.map(a=>+(predict(A.brand,A.fuel,a,A.km,A.ctrlType).hi*100).toFixed(1));
+  const loA  = ages.map(a=>+(predict(A.brand,A.fuel,a,A.km,A.ctrlType).lo*100).toFixed(1));
+  const hiB  = ages.map(a=>+(predict(B.brand,B.fuel,a,B.km,B.ctrlType).hi*100).toFixed(1));
+  const loB  = ages.map(a=>+(predict(B.brand,B.fuel,a,B.km,B.ctrlType).lo*100).toFixed(1));
 
-  if(ageChartInst) ageChartInst.destroy();
-  ageChartInst = new Chart(document.getElementById('ageChart'),{
+  if (ageChartInst) ageChartInst.destroy();
+  ageChartInst = new Chart(document.getElementById('ageChart'), {
     type:'line',
-    data:{
-      labels:ages.map(a=>a+'yr'),
-      datasets:[
-        {label:labelA+' (mid)',data:dsA,borderColor:'#c84b2f',tension:0.4,pointRadius:0,borderWidth:2,fill:false},
-        {label:labelA+' CI',data:hiA,borderColor:'rgba(200,75,47,0)',backgroundColor:'rgba(200,75,47,0.1)',tension:0.4,pointRadius:0,borderWidth:0,fill:'+1'},
-        {label:'',data:loA,borderColor:'rgba(200,75,47,0)',tension:0.4,pointRadius:0,borderWidth:0,fill:false},
-        {label:labelB+' (mid)',data:dsB,borderColor:'#2d7a3a',tension:0.4,pointRadius:0,borderWidth:2,fill:false},
-        {label:labelB+' CI',data:hiB,borderColor:'rgba(45,122,58,0)',backgroundColor:'rgba(45,122,58,0.1)',tension:0.4,pointRadius:0,borderWidth:0,fill:'+1'},
-        {label:'',data:loB,borderColor:'rgba(45,122,58,0)',tension:0.4,pointRadius:0,borderWidth:0,fill:false},
-      ]
-    },
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:true,position:'top',labels:{
-        filter:item=>item.text!=='',
-        font:{size:11,family:"'DM Mono',monospace"},boxWidth:10,padding:12
-      }}},
-      scales:{
-        y:{min:0,max:100,ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}},
-        x:{ticks:{font:{size:11},maxTicksLimit:12},grid:{display:false}}
-      }
+    data:{labels:ages.map(a=>a+'yr'),datasets:[
+      {label:lA,data:midA,borderColor:'#c84b2f',tension:0.4,pointRadius:0,borderWidth:2,fill:false},
+      {label:lA+' CI hi',data:hiA,borderColor:'rgba(0,0,0,0)',backgroundColor:'rgba(200,75,47,0.1)',tension:0.4,pointRadius:0,borderWidth:0,fill:'+1'},
+      {label:lA+' CI lo',data:loA,borderColor:'rgba(0,0,0,0)',tension:0.4,pointRadius:0,borderWidth:0,fill:false},
+      {label:lB,data:midB,borderColor:'#2d7a3a',tension:0.4,pointRadius:0,borderWidth:2,fill:false},
+      {label:lB+' CI hi',data:hiB,borderColor:'rgba(0,0,0,0)',backgroundColor:'rgba(45,122,58,0.1)',tension:0.4,pointRadius:0,borderWidth:0,fill:'+1'},
+      {label:lB+' CI lo',data:loB,borderColor:'rgba(0,0,0,0)',tension:0.4,pointRadius:0,borderWidth:0,fill:false},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,position:'top',labels:{filter:i=>!i.text.includes(' CI'),font:{size:11},boxWidth:10,padding:10}}},
+      scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}},x:{ticks:{font:{size:11},maxTicksLimit:12},grid:{display:false}}}
     }
   });
 }
 
-function populateSelects(){
-  const c = COEF;
-  ['A','B'].forEach((s,si)=>{
+function populateSelects() {
+  ['A','B'].forEach((s,si) => {
     const bSel = document.getElementById('brand'+s);
-    const brands = Object.keys(c.brand).sort();
+    const brands = Object.keys(COEF.brand||{}).sort();
     bSel.innerHTML = brands.map(k=>`<option value="${k}">${k}</option>`).join('');
-    if(si===0){const idx=brands.indexOf('VOLKSWAGEN');if(idx>=0)bSel.selectedIndex=idx;}
-    if(si===1){const idx=brands.indexOf('TESLA');if(idx>=0)bSel.selectedIndex=idx;}
+    const vwI = brands.indexOf('VOLKSWAGEN'); if(vwI>=0&&si===0) bSel.selectedIndex=vwI;
+    const tsI = brands.indexOf('TESLA');      if(tsI>=0&&si===1) bSel.selectedIndex=tsI;
 
     const fSel = document.getElementById('fuel'+s);
-    const fuels = Object.keys(c.fuel);
+    const fuelOrder = ['BEV','PHEV','HEV','Diesel','Petrol','Other'];
+    const fuels = fuelOrder.filter(f=>f in (COEF.fuel||{}));
     fSel.innerHTML = fuels.map(f=>`<option value="${f}">${f}</option>`).join('');
     if(si===0){const di=fuels.indexOf('Diesel');if(di>=0)fSel.selectedIndex=di;}
-    if(si===1){const ei=fuels.indexOf('EV');if(ei>=0)fSel.selectedIndex=ei;}
-
-    const fySel = document.getElementById('fylke'+s);
-    const fylker = Object.keys(c.fylke).sort();
-    fySel.innerHTML = fylker.map(k=>`<option value="${k}">${k}</option>`).join('');
-    const osloIdx=fylker.indexOf('Oslo');
-    if(osloIdx>=0)fySel.selectedIndex=osloIdx;
+    if(si===1){const ei=fuels.indexOf('BEV');if(ei>=0)fSel.selectedIndex=ei;}
   });
 }
 
-function renderCoefs(){
-  const c = COEF;
-  const allCoefs = [
-    ...Object.values(c.brand).map(v=>typeof v==='object'?v.coef:v),
-    ...Object.values(c.fuel).map(v=>typeof v==='object'?v.coef:v),
-  ];
-  const maxAbs = Math.max(...allCoefs.map(Math.abs), 0.01);
-
-  const sections = [
-    {title:'Brand effects',data:Object.entries(c.brand).sort((a,b)=>{
-      const av=typeof a[1]==='object'?a[1].coef:a[1];
-      const bv=typeof b[1]==='object'?b[1].coef:b[1];
-      return bv-av;
-    })},
-    {title:'Fuel type effects',data:Object.entries(c.fuel)},
-    {title:'Control type effects',data:Object.entries(c.ctrl_type)},
-    {title:'Fylke effects',data:Object.entries(c.fylke).sort((a,b)=>{
-      const av=typeof a[1]==='object'?a[1].coef:a[1];
-      const bv=typeof b[1]==='object'?b[1].coef:b[1];
-      return bv-av;
-    })},
-  ];
-
-  const container = document.getElementById('coefSections');
-  container.innerHTML = sections.map(sec=>`
-    <div class="coef-section">
-      <div class="coef-section-title">${sec.title}</div>
-      <div class="coef-grid">
-        ${sec.data.map(([k,v])=>{
-          const coef = typeof v==='object'?v.coef:v;
-          const lo   = typeof v==='object'?v.lo:v;
-          const hi   = typeof v==='object'?v.hi:v;
-          const hasCI = typeof v==='object';
-          const pct = coef/maxAbs*50;
-          const loPct = lo/maxAbs*50;
-          const hiPct = hi/maxAbs*50;
-          const col = coef>0?'#2d7a3a':'#b33030';
-          const zeroPct = 50;
-          const barLeft = Math.min(zeroPct+loPct, zeroPct+hiPct);
-          const barWidth = Math.abs(hiPct-loPct);
-          const dotLeft = zeroPct+pct;
-          return `<div class="coef-item">
-            <div class="coef-top">
-              <span class="coef-key" title="${k}">${k}</span>
-              <span class="coef-val ${coef>0?'pos':'neg'}">${coef>0?'+':''}${coef.toFixed(3)}</span>
-            </div>
-            ${hasCI?`
-            <div class="coef-ci-bar">
-              <div style="position:absolute;left:50%;width:1px;height:100%;background:var(--border)"></div>
-              <div class="coef-ci-fill" style="left:${barLeft.toFixed(1)}%;width:${barWidth.toFixed(1)}%;background:${col};opacity:0.25"></div>
-              <div style="position:absolute;left:${dotLeft.toFixed(1)}%;width:3px;height:100%;background:${col};transform:translateX(-50%)"></div>
-            </div>
-            <div class="coef-ci-text">[${lo.toFixed(3)}, ${hi.toFixed(3)}]</div>
-            `:''}
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`).join('');
-}
-
-function renderMeta(){
-  const m = COEF.meta;
-  document.getElementById('s-samples').textContent  = Number(m.n_samples).toLocaleString('no-NO');
-  document.getElementById('s-auc').textContent       = m.auc_roc.toFixed(3);
-  document.getElementById('s-passrate').textContent  = (m.pass_rate*100).toFixed(1)+'%';
-  const d = new Date(m.trained_at);
-  document.getElementById('s-date').textContent      = d.toLocaleDateString('no-NO',{day:'2-digit',month:'short',year:'numeric'});
+function renderMeta() {
+  const m = COEF.meta||{};
+  document.getElementById('s-samples').textContent = Number(m.n_samples||0).toLocaleString('no-NO');
+  document.getElementById('s-auc').textContent     = (m.auc_roc||0).toFixed(3);
+  document.getElementById('s-passrate').textContent= ((COEF.pass_rate||0)*100).toFixed(1)+'%';
+  const d = new Date(m.trained_at||Date.now());
+  document.getElementById('s-date').textContent    = d.toLocaleDateString('no-NO',{day:'2-digit',month:'short'});
   document.getElementById('header-trained').textContent = 'trained '+d.toLocaleDateString('no-NO',{day:'2-digit',month:'short'});
 }
 
-async function init(){
-  try{
-    COEF = await loadCoefficients();
-    document.getElementById('app-loading').style.display='none';
-    document.getElementById('app').style.display='block';
-    populateSelects();
-    renderMeta();
-    renderCoefs();
-    document.querySelectorAll('select,input[type=range]').forEach(el=>{
-      el.addEventListener('input',()=>{
-        ['A','B'].forEach(s=>{
-          const age=document.getElementById('age'+s).value;
-          const km=document.getElementById('km'+s).value;
-          document.getElementById('age'+s+'-out').textContent=age;
-          document.getElementById('age'+s+'-disp').textContent=age+' yr';
-          document.getElementById('km'+s+'-out').textContent=(km*1000).toLocaleString('no-NO');
-          document.getElementById('km'+s+'-disp').textContent=km+'k km';
-        });
-        update();
-      });
+function renderCoefs() {
+  const sections = [
+    {title:'Brand — marginal pass probability effect', key:'brand'},
+    {title:'Fuel type — BEV / PHEV / HEV / Diesel / Petrol / Other', key:'fuel'},
+    {title:'Control type — Periodisk vs Etterkontroll', key:'ctrl_type'},
+    {title:'Weight class', key:'weight'},
+  ];
+  const allVals = sections.flatMap(sec=>Object.values(COEF[sec.key]||{}).map(v=>Math.abs(typeof v==='object'?v.coef:v)));
+  const maxAbs = Math.max(...allVals, 0.01);
+
+  document.getElementById('coefSections').innerHTML = sections.map(sec=>{
+    const data = Object.entries(COEF[sec.key]||{}).sort((a,b)=>{
+      const av=typeof a[1]==='object'?a[1].coef:a[1];
+      const bv=typeof b[1]==='object'?b[1].coef:b[1];
+      return bv-av;
     });
-    update();
-  }catch(e){
-    document.getElementById('app-loading').style.display='none';
-    const errEl=document.getElementById('app-error');
-    errEl.style.display='block';
-    errEl.textContent='Error: '+e.message+'. Make sure the GitHub Actions workflow has run at least once to generate coefficients.json.';
-  }
+    return `<div class="coef-section">
+      <div class="coef-section-title">${sec.title}</div>
+      <div class="coef-grid">${data.map(([k,v])=>{
+        const coef=typeof v==='object'?v.coef:+v;
+        const lo=typeof v==='object'?v.lo:+v;
+        const hi=typeof v==='object'?v.hi:+v;
+        const col=coef>=0?'#2d7a3a':'#b33030';
+        const z=50, scale=50/maxAbs;
+        const lx=z+lo*scale, hx=z+hi*scale, mx=z+coef*scale;
+        const bL=Math.min(lx,hx), bW=Math.abs(hx-lx);
+        const sign = coef>=0?'+':'';
+        return `<div class="coef-item">
+          <div class="coef-top">
+            <span class="coef-key" title="${k}">${k}</span>
+            <span class="coef-val ${coef>=0?'pos':'neg'}">${sign}${(coef*100).toFixed(1)}pp</span>
+          </div>
+          <div class="coef-bar-wrap">
+            <div class="coef-bar-zero"></div>
+            <div class="coef-bar-range" style="left:${bL.toFixed(1)}%;width:${bW.toFixed(1)}%;background:${col}"></div>
+            <div class="coef-bar-mid" style="left:${mx.toFixed(1)}%;background:${col}"></div>
+          </div>
+          <div class="coef-ci-text">[${(lo*100).toFixed(1)}pp, ${(hi*100).toFixed(1)}pp]</div>
+        </div>`;
+      }).join('')}</div>
+    </div>`;
+  }).join('');
 }
+
+function renderDefectChart() {
+  const caps = COEF.defect_chapters || {};
+  const labels = Object.keys(caps).map(k=>k.replace('Ant 2-3er ',''));
+  const values = Object.values(caps);
+  if (!labels.length) return;
+  if (defectChartInst) defectChartInst.destroy();
+  defectChartInst = new Chart(document.getElementById('defectChart'),{
+    type:'bar',
+    data:{labels,datasets:[{label:'Feature importance',data:values,backgroundColor:'#378ADD',borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{x:{ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{font:{size:11}},grid:{display:false}}}
+    }
+  });
+}
+
 init();
 </script>
 </body>
