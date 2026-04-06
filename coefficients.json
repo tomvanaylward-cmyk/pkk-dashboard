@@ -1,0 +1,102 @@
+{
+  "meta": {
+    "trained_at": "2026-04-06T06:13:24.972832+00:00",
+    "n_samples": 239085,
+    "auc_roc": 0.8407,
+    "pass_rate": 0.6525
+  },
+  "intercept": 0.0111,
+  "brand": {
+    "ALFA ROMEO": -0.3088,
+    "AUDI": 0.6863,
+    "BMW": 0.5119,
+    "BMW I": -0.0855,
+    "BURSTNER": 0.0617,
+    "CHEVROLET": 0.1333,
+    "CITROEN": -0.2657,
+    "DANGEL": -0.5018,
+    "EKERI": -0.2966,
+    "FIAT": -0.4547,
+    "FORD": 0.1985,
+    "HFR": -0.9218,
+    "HONDA": 0.4515,
+    "HYMER": 0.1233,
+    "HYUNDAI": 0.2695,
+    "ISTRAIL": -0.3745,
+    "ISUZU": -0.1986,
+    "IVECO": -0.823,
+    "JAGUAR": 0.6051,
+    "JEEP": 0.304,
+    "KIA": 0.2023,
+    "KRONE": -0.1578,
+    "LAND ROVER": 0.4301,
+    "LEXUS": 0.8698,
+    "MAN": -0.9523,
+    "MAUR BILPÅBYGG": -0.0488,
+    "MAZDA": 0.3934,
+    "MERCEDES-BENZ": 0.2035,
+    "MG": -0.5677,
+    "MINI": 0.4376,
+    "MITSUBISHI": 0.2562,
+    "NISSAN": -0.2726,
+    "NOR SLEP": -0.5305,
+    "OPEL": 0.115,
+    "OTHER": -0.563,
+    "PEUGEOT": -0.0747,
+    "POLESTAR": 0.4819,
+    "PORSCHE": 0.7482,
+    "RENAULT": -0.5911,
+    "SAAB": 0.3095,
+    "SCANIA": -0.6589,
+    "SCHMITZ CARGOBULL": 0.0733,
+    "SKODA": 0.4425,
+    "SSANGYONG": -0.532,
+    "SUBARU": 0.3832,
+    "SUZUKI": 0.4165,
+    "TESLA": -0.6006,
+    "TESLA MOTORS": -0.4606,
+    "TOYOTA": 0.4605,
+    "VOLKSWAGEN": 0.3711,
+    "VOLVO": 0.5791
+  },
+  "fuel": {
+    "Bensin": 0.5508,
+    "Diesel": 0.282,
+    "EV": 0.6585,
+    "Other": -1.2144
+  },
+  "ctrl_type": {
+    "E": 1.9199,
+    "P": -1.6429
+  },
+  "fylke": {
+    "Agder": -0.4017,
+    "Akershus": -0.0418,
+    "Buskerud": -0.2935,
+    "Finnmark": 0.5438,
+    "Innlandet": 0.3623,
+    "Møre og Romsdal": 0.0812,
+    "Nordland": 0.1821,
+    "Oslo": -0.1309,
+    "Rogaland": -0.2039,
+    "Telemark": -0.0145,
+    "Troms": 0.349,
+    "Trøndelag": 0.1758,
+    "Vestfold": -0.0265,
+    "Vestland": -0.2586,
+    "Østfold": -0.0458
+  },
+  "weight": {
+    "Lette": 0.277
+  },
+  "numeric": {
+    "km_scaled": -0.436956,
+    "age_scaled": -0.51586
+  },
+  "scaler": {
+    "km_mean": 174496.1,
+    "km_std": 93516.92,
+    "age_mean": 12.72,
+    "age_std": 5.92
+  }
+}
