@@ -1,7 +1,5 @@
 """
-PKK EU-kontroll — logistic regression training pipeline
-Downloads zip files from vegvesen GitHub repo, parses CSVs,
-fits logistic regression, writes docs/coefficients.json
+PKK EU-kontroll — diagnostic + training pipeline
 """
 
 import os, json, zipfile, io, requests, pandas as pd, numpy as np
@@ -25,10 +23,38 @@ def download_zip(name):
     r.raise_for_status()
     return r.content
 
-def try_parse_csv(raw_bytes):
-    """Try multiple encodings and separators, return first DataFrame with 5+ columns."""
-    for enc in ["utf-8", "latin-1", "utf-8-sig"]:
-        for sep in [";", ",", "\t"]:
+def diagnose_zip(content, zip_name):
+    """Print everything we can learn about what's inside the zip."""
+    with zipfile.ZipFile(io.BytesIO(content)) as z:
+        members = z.namelist()
+        print(f"  Files inside zip: {members}")
+        for member in members:
+            info = z.getinfo(member)
+            print(f"  {member}: {info.file_size:,} bytes uncompressed")
+            with z.open(member) as f:
+                raw = f.read(2000)  # first 2000 bytes
+            # print as text with multiple encodings
+            for enc in ["utf-8", "latin-1", "utf-8-sig"]:
+                try:
+                    text = raw.decode(enc)
+                    lines = text.splitlines()
+                    print(f"\n  --- First 5 lines ({enc}) ---")
+                    for line in lines[:5]:
+                        print(f"  {repr(line)}")
+                    # detect separator
+                    first = lines[0] if lines else ""
+                    for sep in [";", ",", "\t", "|"]:
+                        count = first.count(sep)
+                        if count > 0:
+                            print(f"  Separator '{sep}' appears {count} times in header")
+                    break
+                except Exception as e:
+                    print(f"  {enc} decode failed: {e}")
+
+def try_parse_csv(raw_bytes, member_name):
+    """Try every combination to parse, with full error reporting."""
+    for enc in ["utf-8", "latin-1", "utf-8-sig", "cp1252"]:
+        for sep in [";", ",", "\t", "|"]:
             try:
                 df = pd.read_csv(
                     io.BytesIO(raw_bytes),
@@ -39,53 +65,59 @@ def try_parse_csv(raw_bytes):
                     engine="python"
                 )
                 if len(df.columns) >= 5:
+                    print(f"      Parsed with enc={enc} sep={repr(sep)}: {len(df):,} rows, {len(df.columns)} cols")
+                    print(f"      Columns: {list(df.columns)[:8]}...")
                     return df
-            except Exception:
-                pass
+                else:
+                    print(f"      enc={enc} sep={repr(sep)}: only {len(df.columns)} columns, skipping")
+            except Exception as e:
+                print(f"      enc={enc} sep={repr(sep)}: {type(e).__name__}: {str(e)[:80]}")
     return None
 
-def read_zip(content):
+def read_zip(content, zip_name):
     frames = []
     with zipfile.ZipFile(io.BytesIO(content)) as z:
         for member in z.namelist():
-            if not member.lower().endswith(".csv"):
-                continue
-            print(f"      Reading {member}...")
+            print(f"    Reading {member}...")
             with z.open(member) as f:
                 raw = f.read()
-            df = try_parse_csv(raw)
-            if df is not None:
-                print(f"      -> {len(df):,} rows, {len(df.columns)} cols")
-                frames.append(df)
+            ext = member.lower().split(".")[-1]
+            if ext == "csv":
+                df = try_parse_csv(raw, member)
+                if df is not None:
+                    frames.append(df)
+                else:
+                    print(f"    FAILED to parse {member} with any encoding/separator")
             else:
-                print(f"      -> Could not parse {member}")
+                print(f"    Skipping non-CSV: {member} (extension: {ext})")
     return pd.concat(frames, ignore_index=True) if frames else None
 
-def load_all_data(max_files=6):
+def load_all_data(max_files=2):
+    """Load only 2 files for speed during diagnosis."""
     zips = list_zip_files()[:max_files]
-    print(f"Found {len(zips)} zip files, downloading {len(zips)}...")
+    print(f"Found zip files, using first {len(zips)}: {zips}")
     frames = []
     for name in zips:
-        print(f"  Downloading {name}...")
+        print(f"\nDownloading {name}...")
         try:
             content = download_zip(name)
-            print(f"    Downloaded {len(content):,} bytes")
-            df = read_zip(content)
+            print(f"  Downloaded {len(content):,} bytes")
+            # always diagnose first
+            diagnose_zip(content, name)
+            df = read_zip(content, name)
             if df is not None:
                 frames.append(df)
-                print(f"    -> {len(df):,} rows total")
-                print(f"    -> Columns: {list(df.columns)}")
+                print(f"  SUCCESS: {len(df):,} rows")
         except Exception as e:
-            print(f"    ERROR: {type(e).__name__}: {e}")
+            print(f"  ERROR: {type(e).__name__}: {e}")
     if not frames:
-        raise RuntimeError("No data loaded — check errors above")
+        raise RuntimeError("No data loaded — see diagnostic output above")
     combined = pd.concat(frames, ignore_index=True)
     print(f"\nTotal rows: {len(combined):,}")
     print(f"ALL COLUMNS: {list(combined.columns)}")
     return combined
 
 def find_col(df, *keywords):
-    """Find first column whose lowercased name contains any keyword."""
     for col in df.columns:
         cl = col.lower().strip()
         for kw in keywords:
@@ -116,7 +148,6 @@ def engineer_features(df):
 
     out["brand"] = (df[brand_col].astype(str).str.strip().str.upper().str[:30]
                     if brand_col else "UNKNOWN")
-
     if fuel_col:
         fl = df[fuel_col].astype(str).str.lower()
         out["fuel"] = "Other"
@@ -126,31 +157,25 @@ def engineer_features(df):
         out.loc[fl.str.contains("bensin|gasolin|petrol", na=False), "fuel"] = "Bensin"
     else:
         out["fuel"] = "Other"
-
     if km_col:
         out["km"] = pd.to_numeric(
             df[km_col].astype(str).str.replace(",", ".").str.replace(" ", ""),
             errors="coerce").clip(0, 500_000)
     else:
         out["km"] = np.nan
-
     if reg_col:
         reg = pd.to_numeric(df[reg_col], errors="coerce")
         age = (now_year - reg).where(lambda x: (x >= 0) & (x <= 50))
         out["age"] = age.clip(0, 30)
     else:
         out["age"] = np.nan
-
     if type_col:
         ct = df[type_col].astype(str).str.strip().str.upper()
         out["ctrl_type"] = np.where(ct.str.startswith("E"), "E", "P")
     else:
         out["ctrl_type"] = "P"
-
-    out["fylke"]  = (df[fylke_col].astype(str).str.strip().str[:40]
-                     if fylke_col else "UNKNOWN")
-    out["weight"] = (df[weight_col].astype(str).str.strip().str[:20]
-                     if weight_col else "Lette")
+    out["fylke"]  = (df[fylke_col].astype(str).str.strip().str[:40] if fylke_col else "UNKNOWN")
+    out["weight"] = (df[weight_col].astype(str).str.strip().str[:20] if weight_col else "Lette")
 
     raw = df[approved_col].astype(str).str.strip().str.upper()
     approved = pd.Series(np.nan, index=df.index)
@@ -166,9 +191,8 @@ def engineer_features(df):
     out["approved"]  = out["approved"].astype(int)
     out["brand"]     = out["brand"].fillna("UNKNOWN")
     out["fylke"]     = out["fylke"].fillna("UNKNOWN")
-    print(f"\nRows after cleaning: {len(out):,} (dropped {before - len(out):,})")
-    print(f"Approved counts: {out['approved'].value_counts().to_dict()}")
-    print(f"Fuel distribution: {out['fuel'].value_counts().to_dict()}")
+    print(f"\nRows after cleaning: {len(out):,} (dropped {before-len(out):,})")
+    print(f"Approved: {out['approved'].value_counts().to_dict()}")
     return out.reset_index(drop=True)
 
 def train_model(feat_df):
@@ -180,8 +204,7 @@ def train_model(feat_df):
         ("num", StandardScaler(), ["km","age"]),
     ])
     model = Pipeline([("pre", pre),
-                      ("clf", LogisticRegression(max_iter=500, C=1.0,
-                                                 class_weight="balanced"))])
+                      ("clf", LogisticRegression(max_iter=500, C=1.0, class_weight="balanced"))])
     model.fit(X, y)
     y_prob = model.predict_proba(X)[:,1]
     auc = roc_auc_score(y, y_prob)
@@ -194,15 +217,12 @@ def extract_coefficients(model, feat_df, auc):
     pre   = model.named_steps["pre"]
     names = pre.get_feature_names_out()
     coefs = clf.coef_[0]
-
     def group(prefix):
         return {n[len(prefix):]: round(float(c), 4)
                 for n, c in zip(names, coefs) if n.startswith(prefix)}
-
     top_brands = set(feat_df["brand"].value_counts()[lambda x: x >= 50].index)
     sc = pre.named_transformers_["num"]
     num_map = {n: c for n, c in zip(names, coefs) if n.startswith("num__")}
-
     return {
         "meta": {
             "trained_at": datetime.now(timezone.utc).isoformat(),
@@ -231,15 +251,12 @@ def extract_coefficients(model, feat_df, auc):
 def main():
     os.makedirs("docs", exist_ok=True)
     print("=== PKK model training pipeline ===")
-    raw     = load_all_data(max_files=6)
+    raw     = load_all_data(max_files=2)   # only 2 files for diagnosis
     feat_df = engineer_features(raw)
-
     if len(feat_df) < 1000:
         raise RuntimeError(f"Too few usable rows ({len(feat_df)})")
-
     model, auc = train_model(feat_df)
     coefs      = extract_coefficients(model, feat_df, auc)
-
     with open("docs/coefficients.json", "w") as f:
         json.dump(coefs, f, indent=2, ensure_ascii=False)
     print("\nSaved docs/coefficients.json")
