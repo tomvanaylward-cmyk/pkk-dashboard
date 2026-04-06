@@ -3,7 +3,7 @@
 A logistic regression model trained on Statens vegvesen's open PKK dataset, served as a static web page via GitHub Pages. The model retrains **automatically every night** via GitHub Actions.
 
 ## Live site
-After setup: `https://<your-username>.github.io/pkk-dashboard/`
+After setup: `https://tomvanaylward-cmyk.github.io/pkk-dashboard/`
 
 ## Architecture
 
