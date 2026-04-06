@@ -1,6 +1,7 @@
 """
 PKK EU-kontroll — logistic regression training pipeline
 Confirmed format: latin-1, comma separator, quoted columns
+Outputs confidence intervals via bootstrap sampling
 """
 
 import os, json, zipfile, io, requests, pandas as pd, numpy as np
@@ -37,13 +38,13 @@ def read_zip(content):
                 on_bad_lines="skip",
                 quotechar='"',
                 skipinitialspace=True,
-                usecols=["Kjøretøymerke", "Drivstofftype", "Kilometerstand",
-                         "Første gang registrert", "PKK Kontrolltype",
+                usecols=["Kjøretøymerke","Drivstofftype","Kilometerstand",
+                         "Første gang registrert","PKK Kontrolltype",
                          "Kontrollorganets fylke",
                          "Tillatt totalvekt opp til og med 3500",
                          "Tillatt totalvekt 3501-7500",
                          "Tillatt totalvekt over 7500",
-                         "Godkjent", "Trafikkfarlig feil"]
+                         "Godkjent","Trafikkfarlig feil"]
             )
             print(f"  {member}: {len(df):,} rows")
             frames.append(df)
@@ -71,7 +72,6 @@ def load_all_data(max_files=6, sample_per_file=40000):
     return combined
 
 def make_weight_col(df):
-    """Combine the three weight boolean columns into one category."""
     w = pd.Series("Lette", index=df.index)
     if "Tillatt totalvekt 3501-7500" in df.columns:
         w[df["Tillatt totalvekt 3501-7500"].fillna(0).astype(str).str.strip() == "1"] = "Mellomtunge"
@@ -82,29 +82,21 @@ def make_weight_col(df):
 def engineer_features(df):
     now_year = datetime.now().year
     out = pd.DataFrame(index=df.index)
-
     out["brand"] = df["Kjøretøymerke"].astype(str).str.strip().str.upper().str[:30]
-
     fl = df["Drivstofftype"].astype(str).str.lower()
     out["fuel"] = "Other"
     out.loc[fl.str.contains("elektr", na=False), "fuel"] = "EV"
     out.loc[fl.str.contains("hybrid", na=False), "fuel"] = "Hybrid"
     out.loc[fl.str.contains("diesel", na=False), "fuel"] = "Diesel"
     out.loc[fl.str.contains("bensin|gasolin|petrol", na=False), "fuel"] = "Bensin"
-
     out["km"] = pd.to_numeric(df["Kilometerstand"], errors="coerce").clip(0, 500_000)
-
     reg = pd.to_numeric(df["Første gang registrert"], errors="coerce")
     age = (now_year - reg).where(lambda x: (x >= 0) & (x <= 50))
     out["age"] = age.clip(0, 30)
-
     ct = df["PKK Kontrolltype"].astype(str).str.strip().str.upper()
     out["ctrl_type"] = np.where(ct.str.startswith("E"), "E", "P")
-
-    out["fylke"] = df["Kontrollorganets fylke"].astype(str).str.strip().str[:40]
-
+    out["fylke"]  = df["Kontrollorganets fylke"].astype(str).str.strip().str[:40]
     out["weight"] = make_weight_col(df)
-
     raw = df["Godkjent"].astype(str).str.strip().str.upper()
     approved = pd.Series(np.nan, index=df.index)
     approved[raw.isin(["1","JA","YES","TRUE","GODKJENT"])] = 1
@@ -113,53 +105,92 @@ def engineer_features(df):
     mask = approved.isna() & num.isin([0.0, 1.0])
     approved[mask] = num[mask]
     out["approved"] = approved
-
     before = len(out)
-    out = out.dropna(subset=["km", "age", "approved"]).copy()
+    out = out.dropna(subset=["km","age","approved"]).copy()
     out["approved"] = out["approved"].astype(int)
     out["brand"]   = out["brand"].fillna("UNKNOWN")
     out["fylke"]   = out["fylke"].fillna("UNKNOWN")
     print(f"Rows after cleaning: {len(out):,} (dropped {before-len(out):,})")
     print(f"Approved: {out['approved'].value_counts().to_dict()}")
-    print(f"Fuel: {out['fuel'].value_counts().to_dict()}")
     return out.reset_index(drop=True)
 
-def train_model(feat_df):
-    X = feat_df.drop(columns=["approved"])
-    y = feat_df["approved"]
-
-    # Keep only top 50 brands to limit one-hot width
-    top_brands = feat_df["brand"].value_counts().head(50).index
+def build_pipeline(X):
+    top_brands = X["brand"].value_counts().head(50).index
+    X = X.copy()
     X["brand"] = X["brand"].where(X["brand"].isin(top_brands), other="OTHER")
-
     pre = ColumnTransformer([
         ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=True),
-         ["brand", "fuel", "ctrl_type", "fylke", "weight"]),
-        ("num", StandardScaler(), ["km", "age"]),
+         ["brand","fuel","ctrl_type","fylke","weight"]),
+        ("num", StandardScaler(), ["km","age"]),
     ])
     model = Pipeline([
         ("pre", pre),
         ("clf", LogisticRegression(max_iter=1000, C=1.0,
                                    class_weight="balanced", solver="saga"))
     ])
+    return model, X
+
+def train_model(feat_df):
+    X = feat_df.drop(columns=["approved"])
+    y = feat_df["approved"]
+    model, X = build_pipeline(X)
     model.fit(X, y)
-    y_prob = model.predict_proba(X)[:, 1]
+    y_prob = model.predict_proba(X)[:,1]
     auc = roc_auc_score(y, y_prob)
     print(classification_report(y, model.predict(X)))
     print(f"AUC-ROC: {auc:.4f}")
     return model, auc, X
 
-def extract_coefficients(model, feat_df, auc, X_train):
+def bootstrap_std(feat_df, n_boot=30):
+    """Estimate coefficient standard errors via bootstrap (30 resamples)."""
+    print(f"Running {n_boot} bootstrap resamples for confidence intervals...")
+    X_all = feat_df.drop(columns=["approved"])
+    y_all = feat_df["approved"]
+
+    # fit once to get feature names
+    model0, X0 = build_pipeline(X_all)
+    model0.fit(X0, y_all)
+    names = list(model0.named_steps["pre"].get_feature_names_out())
+    n_features = len(names)
+
+    coef_samples = np.zeros((n_boot, n_features))
+    for i in range(n_boot):
+        idx = np.random.choice(len(feat_df), size=len(feat_df), replace=True)
+        X_b = X_all.iloc[idx]
+        y_b = y_all.iloc[idx]
+        m, X_b2 = build_pipeline(X_b)
+        m.fit(X_b2, y_b)
+        coefs_b = m.named_steps["clf"].coef_[0]
+        # align to master feature list
+        names_b = list(m.named_steps["pre"].get_feature_names_out())
+        for j, nm in enumerate(names):
+            if nm in names_b:
+                coef_samples[i, j] = coefs_b[names_b.index(nm)]
+        if (i+1) % 10 == 0:
+            print(f"  Bootstrap {i+1}/{n_boot}")
+
+    stds = coef_samples.std(axis=0)
+    return dict(zip(names, stds.tolist()))
+
+def extract_coefficients(model, feat_df, auc, stds):
     clf   = model.named_steps["clf"]
     pre   = model.named_steps["pre"]
     names = list(pre.get_feature_names_out())
     coefs = clf.coef_[0].tolist()
 
-    def group(prefix):
-        return {n[len(prefix):]: round(float(c), 4)
-                for n, c in zip(names, coefs) if n.startswith(prefix)}
+    def group_with_ci(prefix, z=1.96):
+        out = {}
+        for n, c in zip(names, coefs):
+            if n.startswith(prefix):
+                label = n[len(prefix):]
+                se = stds.get(n, 0)
+                out[label] = {
+                    "coef": round(float(c), 4),
+                    "lo":   round(float(c) - z * se, 4),
+                    "hi":   round(float(c) + z * se, 4),
+                }
+        return out
 
-    top_brands = set(feat_df["brand"].value_counts().head(50).index)
     sc = pre.named_transformers_["num"]
     num_map = {n: c for n, c in zip(names, coefs) if n.startswith("num__")}
 
@@ -171,11 +202,11 @@ def extract_coefficients(model, feat_df, auc, X_train):
             "pass_rate":  round(float(feat_df["approved"].mean()), 4),
         },
         "intercept": round(float(clf.intercept_[0]), 4),
-        "brand":     group("cat__brand_"),
-        "fuel":      group("cat__fuel_"),
-        "ctrl_type": group("cat__ctrl_type_"),
-        "fylke":     group("cat__fylke_"),
-        "weight":    group("cat__weight_"),
+        "brand":     group_with_ci("cat__brand_"),
+        "fuel":      group_with_ci("cat__fuel_"),
+        "ctrl_type": group_with_ci("cat__ctrl_type_"),
+        "fylke":     group_with_ci("cat__fylke_"),
+        "weight":    group_with_ci("cat__weight_"),
         "numeric": {
             "km_scaled":  round(float(num_map.get("num__km",  0)), 6),
             "age_scaled": round(float(num_map.get("num__age", 0)), 6),
@@ -196,7 +227,8 @@ def main():
     if len(feat_df) < 1000:
         raise RuntimeError(f"Too few rows ({len(feat_df)})")
     model, auc, X_train = train_model(feat_df)
-    coefs = extract_coefficients(model, feat_df, auc, X_train)
+    stds  = bootstrap_std(feat_df, n_boot=30)
+    coefs = extract_coefficients(model, feat_df, auc, stds)
     with open("docs/coefficients.json", "w") as f:
         json.dump(coefs, f, indent=2, ensure_ascii=False)
     print("\nSaved docs/coefficients.json")
