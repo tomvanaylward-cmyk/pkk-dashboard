@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EU-kontroll PKK — Norway Vehicle Inspection Predictor by Tom Aylward</title>
+<title>EU-kontroll PKK — Norway Vehicle Inspection Predictor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -17,7 +17,8 @@ header{border-bottom:1px solid var(--border);background:var(--surface);padding:0
 .dot-live{width:7px;height:7px;border-radius:50%;background:var(--pass);animation:pulse 2s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 main{max-width:1100px;margin:0 auto;padding:2.5rem 1.5rem}
-.hero{margin-bottom:2rem}.hero h1{font-family:var(--display);font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-bottom:.5rem}
+.hero{margin-bottom:2rem}
+.hero h1{font-family:var(--display);font-size:clamp(1.8rem,4vw,2.6rem);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-bottom:.5rem}
 .hero p{color:var(--muted);font-size:.9rem;max-width:600px;line-height:1.6}
 .stats-row{display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;min-width:130px}
@@ -26,9 +27,10 @@ main{max-width:1100px;margin:0 auto;padding:2.5rem 1.5rem}
 .stat-sub{font-size:10px;color:var(--muted);margin-top:2px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
 @media(max-width:700px){.grid2{grid-template-columns:1fr}}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px}
 .card-title{font-family:var(--display);font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:14px}
-.field{margin-bottom:12px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:500}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px;font-weight:500}
 select{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);font-family:var(--body);font-size:13px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6960' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
 .slider-wrap{display:flex;align-items:center;gap:10px}
 .slider-wrap input[type=range]{flex:1;-webkit-appearance:none;height:4px;background:var(--border);border-radius:2px;outline:none}
@@ -47,6 +49,34 @@ select{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:
 .ci-lo{text-align:right}.ci-hi{text-align:left}
 .ci-note{font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:2px}
 .verdict-badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;margin-top:6px;font-family:var(--mono)}
+
+/* Risk factor panel */
+.risk-panel{border-radius:12px;padding:18px;margin-bottom:14px;border:1px solid var(--border)}
+.risk-panel.good{background:var(--pass-bg);border-color:#b8ddbf}
+.risk-panel.warn{background:var(--warn-bg);border-color:#e8d09a}
+.risk-panel.bad{background:var(--fail-bg);border-color:#e5b3b3}
+.risk-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:12px}
+.risk-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.risk-icon.good{background:#c5e8cc}
+.risk-icon.warn{background:#f5e4aa}
+.risk-icon.bad{background:#f5c0c0}
+.risk-title{font-family:var(--display);font-size:1rem;font-weight:700;margin-bottom:2px}
+.risk-subtitle{font-size:12px;color:var(--muted)}
+.risk-factors{display:flex;flex-direction:column;gap:8px}
+.risk-factor-row{display:flex;align-items:center;gap:10px;padding:8px 10px;background:rgba(255,255,255,0.6);border-radius:8px}
+.risk-factor-rank{font-family:var(--mono);font-size:10px;color:var(--muted);min-width:20px}
+.risk-factor-name{flex:1;font-size:13px;font-weight:500}
+.risk-factor-value{font-family:var(--mono);font-size:11px}
+.risk-factor-value.pos{color:var(--pass)}
+.risk-factor-value.neg{color:var(--fail)}
+.risk-factor-value.neu{color:var(--muted)}
+.risk-factor-bar-wrap{width:80px;height:6px;background:rgba(0,0,0,0.08);border-radius:3px;overflow:hidden}
+.risk-factor-bar{height:100%;border-radius:3px}
+.risk-tip{margin-top:12px;font-size:12px;color:var(--muted);line-height:1.6;padding:10px 12px;background:rgba(255,255,255,0.5);border-radius:8px;border-left:3px solid currentColor}
+.risk-tip.good{border-left-color:#2d7a3a;color:#2d5c32}
+.risk-tip.warn{border-left-color:#8a5c00;color:#6b4700}
+.risk-tip.bad{border-left-color:#b33030;color:#8a2020}
+
 .diff-text{font-size:13px;color:var(--muted);line-height:1.7;padding:10px 12px;background:var(--bg);border-radius:8px;margin-bottom:14px}
 .diff-text strong{color:var(--text);font-weight:500}
 .coef-section{margin-bottom:14px}
@@ -64,10 +94,8 @@ select{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:
 .coef-ci-text{font-size:9px;color:var(--muted);font-family:var(--mono)}
 footer{text-align:center;font-size:11px;color:var(--muted);padding:2rem 1rem;border-top:1px solid var(--border);margin-top:1rem;line-height:1.8}
 footer a{color:var(--muted)}
-.loading-overlay,.error-box{text-align:center;padding:3rem;font-family:var(--mono);font-size:13px;color:var(--muted)}
-.error-box{background:var(--fail-bg);border:1px solid #e5b3b3;border-radius:8px;color:var(--fail);text-align:left;padding:16px}
-.fuel-legend{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
-.fuel-chip{font-size:10px;font-family:var(--mono);padding:2px 8px;border-radius:12px;border:1px solid var(--border);color:var(--muted)}
+.loading-overlay{text-align:center;padding:3rem;font-family:var(--mono);font-size:13px;color:var(--muted)}
+.error-box{background:var(--fail-bg);border:1px solid #e5b3b3;border-radius:8px;padding:16px;font-size:13px;color:var(--fail);font-family:var(--mono)}
 </style>
 </head>
 <body>
@@ -79,10 +107,12 @@ footer a{color:var(--muted)}
   <div id="app-loading" class="loading-overlay">Loading model…</div>
   <div id="app-error" class="error-box" style="display:none"></div>
   <div id="app" style="display:none">
+
     <div class="hero">
       <h1>Will your car pass the EU-kontroll?</h1>
-      <p>XGBoost model trained on Statens vegvesen's open PKK dataset. No regional bias — national pass rates only. Confidence intervals via 20-sample bootstrap.</p>
+      <p>XGBoost model trained on Statens vegvesen's open PKK dataset — 300,000 real inspection records. Retrained nightly via GitHub Actions.</p>
     </div>
+
     <div class="stats-row">
       <div class="stat-card"><div class="stat-label">Training samples</div><div class="stat-val" id="s-samples">—</div><div class="stat-sub">inspection records</div></div>
       <div class="stat-card"><div class="stat-label">AUC-ROC</div><div class="stat-val" id="s-auc">—</div><div class="stat-sub">model accuracy</div></div>
@@ -104,10 +134,7 @@ footer a{color:var(--muted)}
           <div class="prob-bar-track"><div class="prob-bar-fill" id="barA"></div></div>
           <div class="ci-row">
             <span class="ci-lo" id="ciLoA">—</span>
-            <div class="ci-track">
-              <div class="ci-range" id="ciRangeA"></div>
-              <div class="ci-dot" id="ciDotA"></div>
-            </div>
+            <div class="ci-track"><div class="ci-range" id="ciRangeA"></div><div class="ci-dot" id="ciDotA"></div></div>
             <span class="ci-hi" id="ciHiA">—</span>
           </div>
           <div class="ci-note">95% confidence interval</div>
@@ -128,10 +155,7 @@ footer a{color:var(--muted)}
           <div class="prob-bar-track"><div class="prob-bar-fill" id="barB"></div></div>
           <div class="ci-row">
             <span class="ci-lo" id="ciLoB">—</span>
-            <div class="ci-track">
-              <div class="ci-range" id="ciRangeB"></div>
-              <div class="ci-dot" id="ciDotB"></div>
-            </div>
+            <div class="ci-track"><div class="ci-range" id="ciRangeB"></div><div class="ci-dot" id="ciDotB"></div></div>
             <span class="ci-hi" id="ciHiB">—</span>
           </div>
           <div class="ci-note">95% confidence interval</div>
@@ -140,28 +164,37 @@ footer a{color:var(--muted)}
       </div>
     </div>
 
-    <div class="card" style="margin-bottom:14px">
+    <!-- Risk factor panels -->
+    <div class="grid2">
+      <div id="riskPanelA"></div>
+      <div id="riskPanelB"></div>
+    </div>
+
+    <div class="card">
       <div class="card-title">Comparison</div>
       <div class="diff-text" id="diffText">—</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:500">Pass probability vs. age (at current odometer)</div>
       <div style="position:relative;height:210px"><canvas id="ageChart"></canvas></div>
     </div>
 
-    <div class="card" style="margin-bottom:14px">
+    <div class="card">
       <div class="card-title">Marginal effects — pass probability difference vs. baseline</div>
-      <div style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:12px">Shows how much each category raises or lowers pass probability compared to the most common value in that group. Bars show 95% CI.</div>
+      <div style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:12px">How much each category raises or lowers pass probability. Bars show 95% CI.</div>
       <div id="coefSections"></div>
     </div>
 
     <div class="card">
-      <div class="card-title">Defect chapter importance (XGBoost feature importance)</div>
+      <div class="card-title">Defect chapter importance (XGBoost)</div>
       <div style="position:relative;height:260px"><canvas id="defectChart"></canvas></div>
     </div>
+
   </div>
 </main>
 <footer>
-  Data: <a href="https://github.com/vegvesen/periodisk-kjoretoy-kontroll" target="_blank">Statens vegvesen / periodisk-kjoretoy-kontroll</a> &nbsp;·&nbsp; License: CC BY 4.0 &nbsp;·&nbsp; Model retrained nightly &nbsp;·&nbsp; Not affiliated with Statens vegvesen
+  Data: <a href="https://github.com/vegvesen/periodisk-kjoretoy-kontroll" target="_blank">Statens vegvesen / periodisk-kjoretoy-kontroll</a> &nbsp;·&nbsp;
+  License: CC BY 4.0 &nbsp;·&nbsp; Model retrained nightly &nbsp;·&nbsp; Not affiliated with Statens vegvesen
 </footer>
+
 <script>
 let COEF = null;
 let ageChartInst = null;
@@ -205,7 +238,7 @@ function getCoef(obj, key) {
   if (!obj || !(key in obj)) return {coef:0, lo:0, hi:0};
   const v = obj[key];
   if (typeof v === 'object' && 'coef' in v) return v;
-  return {coef: +v, lo: +v, hi: +v};
+  return {coef:+v, lo:+v, hi:+v};
 }
 
 function predict(brand, fuel, age, km, ctrlType) {
@@ -213,19 +246,162 @@ function predict(brand, fuel, age, km, ctrlType) {
   const bc  = getCoef(COEF.brand, brand);
   const fc  = getCoef(COEF.fuel, fuel);
   const tc  = getCoef(COEF.ctrl_type, ctrlType);
-
-  // age & km: linear interpolation from correlations
-  const nc = COEF.numeric || {};
-  const ageNorm  = (age - 12.72) / 5.92;
-  const kmNorm   = (km * 1000 - 174496) / 93517;
-  const ageEff   = (nc.age_corr || -0.15) * ageNorm * 0.3;
-  const kmEff    = (nc.km_corr  || -0.12) * kmNorm  * 0.3;
-
+  const nc  = COEF.numeric || {};
+  const ageNorm = (age - 12.72) / 5.92;
+  const kmNorm  = (km * 1000 - 174496) / 93517;
+  const ageEff  = (nc.age_corr || -0.15) * ageNorm * 0.3;
+  const kmEff   = (nc.km_corr  || -0.12) * kmNorm  * 0.3;
   const mid = Math.max(0.01, Math.min(0.99, base + bc.coef + fc.coef + tc.coef + ageEff + kmEff));
   const lo  = Math.max(0.01, Math.min(0.99, base + bc.lo  + fc.lo  + tc.lo  + ageEff + kmEff));
   const hi  = Math.max(0.01, Math.min(0.99, base + bc.hi  + fc.hi  + tc.hi  + ageEff + kmEff));
+  return {mid, lo:Math.min(lo,hi), hi:Math.max(lo,hi)};
+}
 
-  return { mid, lo: Math.min(lo,hi), hi: Math.max(lo,hi) };
+function getRiskFactors(brand, fuel, age, km, ctrlType) {
+  const base = COEF.pass_rate || 0.65;
+  const bc   = getCoef(COEF.brand, brand);
+  const fc   = getCoef(COEF.fuel, fuel);
+  const tc   = getCoef(COEF.ctrl_type, ctrlType);
+  const nc   = COEF.numeric || {};
+  const ageNorm = (age - 12.72) / 5.92;
+  const kmNorm  = (km * 1000 - 174496) / 93517;
+  const ageEff  = (nc.age_corr || -0.15) * ageNorm * 0.3;
+  const kmEff   = (nc.km_corr  || -0.12) * kmNorm  * 0.3;
+
+  const factors = [
+    {
+      name: 'Brand — ' + brand,
+      effect: bc.coef,
+      label: brand,
+      type: 'brand',
+      tip: bc.coef < -0.05
+        ? `${brand} vehicles tend to fail more often than average in Norwegian inspections. Common issues include brake wear and lighting faults.`
+        : bc.coef > 0.05
+        ? `${brand} vehicles have a strong track record in Norwegian PKK inspections.`
+        : `${brand} performs close to the national average.`,
+    },
+    {
+      name: 'Fuel type — ' + fuel,
+      effect: fc.coef,
+      label: fuel,
+      type: 'fuel',
+      tip: fuel === 'BEV'
+        ? 'Electric vehicles benefit from regenerative braking (less brake wear) and no exhaust system — two of the most common failure points.'
+        : fuel === 'Hybrid'
+        ? 'Hybrids have fewer exhaust failures than pure combustion engines but still carry mechanical complexity.'
+        : fuel === 'Diesel'
+        ? 'Diesel vehicles are commonly flagged for exhaust emissions and particulate filter issues.'
+        : 'Petrol vehicles are frequently flagged for lighting, brake, and suspension faults at older ages.',
+    },
+    {
+      name: 'Age — ' + age + ' years',
+      effect: ageEff,
+      label: age + ' yr',
+      type: 'age',
+      tip: age > 15
+        ? 'Vehicles over 15 years old face significantly higher failure rates — brake system, suspension, and rust are the main culprits.'
+        : age > 8
+        ? 'At this age, brake wear and lighting faults are the most common issues to check before inspection.'
+        : 'A relatively new vehicle — age is not a significant risk factor here.',
+    },
+    {
+      name: 'Odometer — ' + (km*1000).toLocaleString('no-NO') + ' km',
+      effect: kmEff,
+      label: (km) + 'k km',
+      type: 'km',
+      tip: km > 200
+        ? 'High mileage vehicles show significantly higher failure rates, particularly for brakes, tyres, and suspension.'
+        : km > 100
+        ? 'Moderate mileage — brake pads and tyre wear are the main things to check.'
+        : 'Low mileage — odometer is not a significant risk factor here.',
+    },
+    {
+      name: 'Control type — ' + (ctrlType === 'E' ? 'Etterkontroll' : 'Periodisk'),
+      effect: tc.coef,
+      label: ctrlType,
+      type: 'ctrl',
+      tip: ctrlType === 'E'
+        ? 'Re-inspection (Etterkontroll) — the vehicle already failed once and had repairs done, so pass rates are much higher.'
+        : 'Standard periodic inspection — the vehicle has not been pre-screened.',
+    },
+  ].sort((a,b) => a.effect - b.effect);
+
+  return factors;
+}
+
+const DEFECT_NAMES = {
+  'kap 0': 'Identification & docs',
+  'kap 1': 'Brakes',
+  'kap 2': 'Steering',
+  'kap 3': 'Visibility',
+  'kap 4': 'Lights & electrical',
+  'kap 5': 'Axles, wheels & tyres',
+  'kap 6': 'Chassis & body',
+  'kap 7': 'Other equipment',
+  'kap 8': 'Nuisances (noise/emissions)',
+  'kap 9': 'Checks during drive',
+  'kap 10': 'Environment',
+};
+
+function topDefectChapters(n=3) {
+  const caps = COEF.defect_chapters || {};
+  return Object.entries(caps)
+    .sort((a,b) => b[1]-a[1])
+    .slice(0,n)
+    .map(([k]) => {
+      const short = k.replace('Ant 2-3er ','');
+      return DEFECT_NAMES[short] || short;
+    });
+}
+
+function renderRiskPanel(side, brand, fuel, age, km, ctrlType, prob) {
+  const factors = getRiskFactors(brand, fuel, age, km, ctrlType);
+  const worst   = factors[0];
+  const best    = factors[factors.length-1];
+  const topDefects = topDefectChapters(3);
+
+  const severity = prob.mid >= 0.78 ? 'good' : prob.mid >= 0.60 ? 'warn' : 'bad';
+  const icons    = {good:'✓', warn:'!', bad:'✗'};
+  const titles   = {
+    good: 'Looking good',
+    warn: 'Some concerns',
+    bad:  'High risk of failing',
+  };
+
+  const maxAbs = Math.max(...factors.map(f=>Math.abs(f.effect)), 0.01);
+
+  const factorRows = factors.map((f,i) => {
+    const pct = Math.abs(f.effect) / maxAbs * 100;
+    const col = f.effect >= 0 ? '#2d7a3a' : '#b33030';
+    const sign = f.effect >= 0 ? '+' : '';
+    const valStr = sign + (f.effect*100).toFixed(1) + 'pp';
+    const cls = f.effect > 0.01 ? 'pos' : f.effect < -0.01 ? 'neg' : 'neu';
+    const rankLabel = i === 0 ? '▼ worst' : i === factors.length-1 ? '▲ best' : (i+1)+'';
+    return `<div class="risk-factor-row">
+      <span class="risk-factor-rank">${rankLabel}</span>
+      <span class="risk-factor-name">${f.name}</span>
+      <div class="risk-factor-bar-wrap"><div class="risk-factor-bar" style="width:${pct.toFixed(0)}%;background:${col}"></div></div>
+      <span class="risk-factor-value ${cls}">${valStr}</span>
+    </div>`;
+  }).join('');
+
+  const tipSeverity = worst.effect < -0.05 ? 'bad' : worst.effect < 0 ? 'warn' : 'good';
+  const tipText = worst.effect < -0.01
+    ? `<strong>Biggest risk:</strong> ${worst.tip} Most common failure chapters nationally: ${topDefects.join(', ')}.`
+    : `<strong>No major risk factors</strong> for this vehicle profile. Still worth checking: ${topDefects.join(', ')}.`;
+
+  document.getElementById('riskPanel'+side).innerHTML = `
+    <div class="risk-panel ${severity}">
+      <div class="risk-header">
+        <div class="risk-icon ${severity}">${icons[severity]}</div>
+        <div>
+          <div class="risk-title">Vehicle ${side}: ${titles[severity]}</div>
+          <div class="risk-subtitle">${(prob.mid*100).toFixed(1)}% predicted pass probability</div>
+        </div>
+      </div>
+      <div class="risk-factors">${factorRows}</div>
+      <div class="risk-tip ${tipSeverity}">${tipText}</div>
+    </div>`;
 }
 
 function probColor(p) {
@@ -256,25 +432,18 @@ function renderResult(s, p) {
   document.getElementById('prob'+s).style.color = col;
   document.getElementById('bar'+s).style.width = pct;
   document.getElementById('bar'+s).style.background = col;
-
-  const loPct  = (p.lo*100).toFixed(1);
-  const hiPct  = (p.hi*100).toFixed(1);
-  const midPct = (p.mid*100).toFixed(1);
+  const loPct = (p.lo*100).toFixed(1);
+  const hiPct = (p.hi*100).toFixed(1);
   document.getElementById('ciLo'+s).textContent = loPct+'%';
   document.getElementById('ciHi'+s).textContent = hiPct+'%';
-  const ciRange = document.getElementById('ciRange'+s);
-  const ciDot   = document.getElementById('ciDot'+s);
-  ciRange.style.left = loPct+'%';
-  ciRange.style.width = (p.hi-p.lo)*100+'%';
-  ciRange.style.background = col;
-  ciDot.style.left = midPct+'%';
-  ciDot.style.borderColor = col;
-
+  document.getElementById('ciRange'+s).style.left = loPct+'%';
+  document.getElementById('ciRange'+s).style.width = ((p.hi-p.lo)*100).toFixed(1)+'%';
+  document.getElementById('ciRange'+s).style.background = col;
+  document.getElementById('ciDot'+s).style.left = (p.mid*100).toFixed(1)+'%';
+  document.getElementById('ciDot'+s).style.borderColor = col;
   const v = verdict(p.mid);
   const vEl = document.getElementById('verdict'+s);
-  vEl.textContent = v.text;
-  vEl.style.background = v.bg;
-  vEl.style.color = v.col;
+  vEl.textContent = v.text; vEl.style.background = v.bg; vEl.style.color = v.col;
 }
 
 function update() {
@@ -283,46 +452,46 @@ function update() {
   const pB = predict(B.brand, B.fuel, B.age, B.km, B.ctrlType);
   renderResult('A', pA);
   renderResult('B', pB);
+  renderRiskPanel('A', A.brand, A.fuel, A.age, A.km, A.ctrlType, pA);
+  renderRiskPanel('B', B.brand, B.fuel, B.age, B.km, B.ctrlType, pB);
 
   const diff = (pB.mid - pA.mid)*100;
-  const labelA = document.getElementById('brandA').options[document.getElementById('brandA').selectedIndex].text;
-  const labelB = document.getElementById('brandB').options[document.getElementById('brandB').selectedIndex].text;
+  const lA = document.getElementById('brandA').options[document.getElementById('brandA').selectedIndex].text;
+  const lB = document.getElementById('brandB').options[document.getElementById('brandB').selectedIndex].text;
   let html;
   if (Math.abs(diff) < 0.5) {
-    html = `<strong>${labelA}</strong> and <strong>${labelB}</strong> have nearly identical predicted pass probabilities.`;
+    html = `<strong>${lA}</strong> and <strong>${lB}</strong> have nearly identical predicted pass probabilities.`;
   } else {
-    const winner = diff>0?labelB:labelA;
-    const loser  = diff>0?labelA:labelB;
+    const winner = diff>0?lB:lA, loser = diff>0?lA:lB;
     const pW = diff>0?(pB.mid*100).toFixed(1):(pA.mid*100).toFixed(1);
     const pL = diff>0?(pA.mid*100).toFixed(1):(pB.mid*100).toFixed(1);
     html = `<strong>${winner}</strong> is predicted to pass more often — <strong>${pW}%</strong> vs <strong>${pL}%</strong> for <strong>${loser}</strong>, a difference of <strong>${Math.abs(diff).toFixed(1)} pp</strong>.`;
   }
   document.getElementById('diffText').innerHTML = html;
-  drawAgeChart(A, B, labelA, labelB);
+  drawAgeChart(A, B, lA, lB);
 }
 
 function drawAgeChart(A, B, lA, lB) {
   const ages = Array.from({length:25},(_,i)=>i+1);
-  const midA = ages.map(a=>+(predict(A.brand,A.fuel,a,A.km,A.ctrlType).mid*100).toFixed(1));
-  const midB = ages.map(a=>+(predict(B.brand,B.fuel,a,B.km,B.ctrlType).mid*100).toFixed(1));
-  const hiA  = ages.map(a=>+(predict(A.brand,A.fuel,a,A.km,A.ctrlType).hi*100).toFixed(1));
-  const loA  = ages.map(a=>+(predict(A.brand,A.fuel,a,A.km,A.ctrlType).lo*100).toFixed(1));
-  const hiB  = ages.map(a=>+(predict(B.brand,B.fuel,a,B.km,B.ctrlType).hi*100).toFixed(1));
-  const loB  = ages.map(a=>+(predict(B.brand,B.fuel,a,B.km,B.ctrlType).lo*100).toFixed(1));
-
+  const midA=ages.map(a=>+(predict(A.brand,A.fuel,a,A.km,A.ctrlType).mid*100).toFixed(1));
+  const midB=ages.map(a=>+(predict(B.brand,B.fuel,a,B.km,B.ctrlType).mid*100).toFixed(1));
+  const hiA =ages.map(a=>+(predict(A.brand,A.fuel,a,A.km,A.ctrlType).hi*100).toFixed(1));
+  const loA =ages.map(a=>+(predict(A.brand,A.fuel,a,A.km,A.ctrlType).lo*100).toFixed(1));
+  const hiB =ages.map(a=>+(predict(B.brand,B.fuel,a,B.km,B.ctrlType).hi*100).toFixed(1));
+  const loB =ages.map(a=>+(predict(B.brand,B.fuel,a,B.km,B.ctrlType).lo*100).toFixed(1));
   if (ageChartInst) ageChartInst.destroy();
-  ageChartInst = new Chart(document.getElementById('ageChart'), {
+  ageChartInst = new Chart(document.getElementById('ageChart'),{
     type:'line',
     data:{labels:ages.map(a=>a+'yr'),datasets:[
       {label:lA,data:midA,borderColor:'#c84b2f',tension:0.4,pointRadius:0,borderWidth:2,fill:false},
-      {label:lA+' CI hi',data:hiA,borderColor:'rgba(0,0,0,0)',backgroundColor:'rgba(200,75,47,0.1)',tension:0.4,pointRadius:0,borderWidth:0,fill:'+1'},
-      {label:lA+' CI lo',data:loA,borderColor:'rgba(0,0,0,0)',tension:0.4,pointRadius:0,borderWidth:0,fill:false},
+      {label:lA+' hi',data:hiA,borderColor:'rgba(0,0,0,0)',backgroundColor:'rgba(200,75,47,0.1)',tension:0.4,pointRadius:0,borderWidth:0,fill:'+1'},
+      {label:lA+' lo',data:loA,borderColor:'rgba(0,0,0,0)',tension:0.4,pointRadius:0,borderWidth:0,fill:false},
       {label:lB,data:midB,borderColor:'#2d7a3a',tension:0.4,pointRadius:0,borderWidth:2,fill:false},
-      {label:lB+' CI hi',data:hiB,borderColor:'rgba(0,0,0,0)',backgroundColor:'rgba(45,122,58,0.1)',tension:0.4,pointRadius:0,borderWidth:0,fill:'+1'},
-      {label:lB+' CI lo',data:loB,borderColor:'rgba(0,0,0,0)',tension:0.4,pointRadius:0,borderWidth:0,fill:false},
+      {label:lB+' hi',data:hiB,borderColor:'rgba(0,0,0,0)',backgroundColor:'rgba(45,122,58,0.1)',tension:0.4,pointRadius:0,borderWidth:0,fill:'+1'},
+      {label:lB+' lo',data:loB,borderColor:'rgba(0,0,0,0)',tension:0.4,pointRadius:0,borderWidth:0,fill:false},
     ]},
     options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:true,position:'top',labels:{filter:i=>!i.text.includes(' CI'),font:{size:11},boxWidth:10,padding:10}}},
+      plugins:{legend:{display:true,position:'top',labels:{filter:i=>!i.text.endsWith(' hi')&&!i.text.endsWith(' lo'),font:{size:11},boxWidth:10,padding:10}}},
       scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}},x:{ticks:{font:{size:11},maxTicksLimit:12},grid:{display:false}}}
     }
   });
@@ -333,12 +502,12 @@ function populateSelects() {
     const bSel = document.getElementById('brand'+s);
     const brands = Object.keys(COEF.brand||{}).sort();
     bSel.innerHTML = brands.map(k=>`<option value="${k}">${k}</option>`).join('');
-    const vwI = brands.indexOf('VOLKSWAGEN'); if(vwI>=0&&si===0) bSel.selectedIndex=vwI;
-    const tsI = brands.indexOf('TESLA');      if(tsI>=0&&si===1) bSel.selectedIndex=tsI;
+    const vwI=brands.indexOf('VOLKSWAGEN'); if(vwI>=0&&si===0) bSel.selectedIndex=vwI;
+    const tsI=brands.indexOf('TESLA');      if(tsI>=0&&si===1) bSel.selectedIndex=tsI;
 
     const fSel = document.getElementById('fuel'+s);
-    const fuelOrder = ['BEV','PHEV','HEV','Diesel','Petrol','Other'];
-    const fuels = fuelOrder.filter(f=>f in (COEF.fuel||{}));
+    const fuelOrder=['BEV','Hybrid','Diesel','Petrol','Other'];
+    const fuels=fuelOrder.filter(f=>f in (COEF.fuel||{}));
     fSel.innerHTML = fuels.map(f=>`<option value="${f}">${f}</option>`).join('');
     if(si===0){const di=fuels.indexOf('Diesel');if(di>=0)fSel.selectedIndex=di;}
     if(si===1){const ei=fuels.indexOf('BEV');if(ei>=0)fSel.selectedIndex=ei;}
@@ -347,26 +516,25 @@ function populateSelects() {
 
 function renderMeta() {
   const m = COEF.meta||{};
-  document.getElementById('s-samples').textContent = Number(m.n_samples||0).toLocaleString('no-NO');
-  document.getElementById('s-auc').textContent     = (m.auc_roc||0).toFixed(3);
-  document.getElementById('s-passrate').textContent= ((COEF.pass_rate||0)*100).toFixed(1)+'%';
+  document.getElementById('s-samples').textContent  = Number(m.n_samples||0).toLocaleString('no-NO');
+  document.getElementById('s-auc').textContent      = (m.auc_roc||0).toFixed(3);
+  document.getElementById('s-passrate').textContent = ((COEF.pass_rate||0)*100).toFixed(1)+'%';
   const d = new Date(m.trained_at||Date.now());
-  document.getElementById('s-date').textContent    = d.toLocaleDateString('no-NO',{day:'2-digit',month:'short'});
+  document.getElementById('s-date').textContent     = d.toLocaleDateString('no-NO',{day:'2-digit',month:'short'});
   document.getElementById('header-trained').textContent = 'trained '+d.toLocaleDateString('no-NO',{day:'2-digit',month:'short'});
 }
 
 function renderCoefs() {
-  const sections = [
-    {title:'Brand — marginal pass probability effect', key:'brand'},
-    {title:'Fuel type — BEV / PHEV / HEV / Diesel / Petrol / Other', key:'fuel'},
-    {title:'Control type — Periodisk vs Etterkontroll', key:'ctrl_type'},
-    {title:'Weight class', key:'weight'},
+  const sections=[
+    {title:'Brand — marginal pass probability effect',key:'brand'},
+    {title:'Fuel type',key:'fuel'},
+    {title:'Control type',key:'ctrl_type'},
+    {title:'Weight class',key:'weight'},
   ];
-  const allVals = sections.flatMap(sec=>Object.values(COEF[sec.key]||{}).map(v=>Math.abs(typeof v==='object'?v.coef:v)));
-  const maxAbs = Math.max(...allVals, 0.01);
-
-  document.getElementById('coefSections').innerHTML = sections.map(sec=>{
-    const data = Object.entries(COEF[sec.key]||{}).sort((a,b)=>{
+  const allVals=sections.flatMap(s=>Object.values(COEF[s.key]||{}).map(v=>Math.abs(typeof v==='object'?v.coef:v)));
+  const maxAbs=Math.max(...allVals,0.01);
+  document.getElementById('coefSections').innerHTML=sections.map(sec=>{
+    const data=Object.entries(COEF[sec.key]||{}).sort((a,b)=>{
       const av=typeof a[1]==='object'?a[1].coef:a[1];
       const bv=typeof b[1]==='object'?b[1].coef:b[1];
       return bv-av;
@@ -378,14 +546,13 @@ function renderCoefs() {
         const lo=typeof v==='object'?v.lo:+v;
         const hi=typeof v==='object'?v.hi:+v;
         const col=coef>=0?'#2d7a3a':'#b33030';
-        const z=50, scale=50/maxAbs;
-        const lx=z+lo*scale, hx=z+hi*scale, mx=z+coef*scale;
-        const bL=Math.min(lx,hx), bW=Math.abs(hx-lx);
-        const sign = coef>=0?'+':'';
+        const z=50,scale=50/maxAbs;
+        const lx=z+lo*scale,hx=z+hi*scale,mx=z+coef*scale;
+        const bL=Math.min(lx,hx),bW=Math.abs(hx-lx);
         return `<div class="coef-item">
           <div class="coef-top">
             <span class="coef-key" title="${k}">${k}</span>
-            <span class="coef-val ${coef>=0?'pos':'neg'}">${sign}${(coef*100).toFixed(1)}pp</span>
+            <span class="coef-val ${coef>=0?'pos':'neg'}">${coef>=0?'+':''}${(coef*100).toFixed(1)}pp</span>
           </div>
           <div class="coef-bar-wrap">
             <div class="coef-bar-zero"></div>
@@ -394,18 +561,18 @@ function renderCoefs() {
           </div>
           <div class="coef-ci-text">[${(lo*100).toFixed(1)}pp, ${(hi*100).toFixed(1)}pp]</div>
         </div>`;
-      }).join('')}</div>
-    </div>`;
+      }).join('')}</div></div>`;
   }).join('');
 }
 
 function renderDefectChart() {
-  const caps = COEF.defect_chapters || {};
-  const labels = Object.keys(caps).map(k=>k.replace('Ant 2-3er ',''));
-  const values = Object.values(caps);
-  if (!labels.length) return;
-  if (defectChartInst) defectChartInst.destroy();
-  defectChartInst = new Chart(document.getElementById('defectChart'),{
+  const caps=COEF.defect_chapters||{};
+  const entries=Object.entries(caps).sort((a,b)=>b[1]-a[1]);
+  const labels=entries.map(([k])=>{const s=k.replace('Ant 2-3er ','');return DEFECT_NAMES[s]||s;});
+  const values=entries.map(([,v])=>v);
+  if(!labels.length) return;
+  if(defectChartInst) defectChartInst.destroy();
+  defectChartInst=new Chart(document.getElementById('defectChart'),{
     type:'bar',
     data:{labels,datasets:[{label:'Feature importance',data:values,backgroundColor:'#378ADD',borderRadius:4}]},
     options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
@@ -414,6 +581,13 @@ function renderDefectChart() {
     }
   });
 }
+
+const DEFECT_NAMES={
+  'kap 0':'Identification & docs','kap 1':'Brakes','kap 2':'Steering',
+  'kap 3':'Visibility','kap 4':'Lights & electrical','kap 5':'Axles, wheels & tyres',
+  'kap 6':'Chassis & body','kap 7':'Other equipment','kap 8':'Noise & emissions',
+  'kap 9':'Checks during drive','kap 10':'Environment',
+};
 
 init();
 </script>
