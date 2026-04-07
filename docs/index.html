@@ -188,6 +188,19 @@ footer a{color:var(--muted)}
       <div style="position:relative;height:260px"><canvas id="defectChart"></canvas></div>
     </div>
 
+    <div class="card">
+      <div class="card-title">Most common failure chapters — national PKK data</div>
+      <div style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:14px">
+        Share of <span id="def-total">—</span> inspections where each chapter had at least one fault recorded.
+        Failed inspections only shown in darker bar.
+      </div>
+      <div id="defectFailSection"></div>
+      <div style="margin-top:20px">
+        <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:10px">Failure rates by fuel type — top 3 chapters</div>
+        <div id="defectByFuel"></div>
+      </div>
+    </div>
+
   </div>
 </main>
 <footer>
@@ -210,6 +223,7 @@ async function init() {
     populateSelects();
     renderMeta();
     renderCoefs();
+    renderDefects();
     renderDefectChart();
     document.querySelectorAll('select,input[type=range]').forEach(el => {
       el.addEventListener('input', () => { syncSliders(); update(); });
@@ -589,6 +603,50 @@ function renderDefectChart() {
 }
 
 
+
+function renderDefects() {
+  const d = COEF.defects;
+  if (!d) return;
+
+  document.getElementById('def-total').textContent =
+    Number(d.total_inspections).toLocaleString('no-NO');
+
+  const maxRate = Math.max(...d.chapters.map(c => c.rate_all));
+  const container = document.getElementById('defectFailSection');
+  container.innerHTML = d.chapters.map(ch => {
+    const allPct  = (ch.rate_all    * 100).toFixed(1);
+    const failPct = (ch.rate_failed * 100).toFixed(1);
+    const barAll  = (ch.rate_all  / maxRate * 100).toFixed(1);
+    const barFail = (ch.rate_failed / maxRate * 100).toFixed(1);
+    const col = ch.rate_all > 0.15 ? '#b33030' : ch.rate_all > 0.07 ? '#8a5c00' : '#2d7a3a';
+    return `<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
+        <span style="font-weight:500;color:var(--text)">${ch.name}</span>
+        <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">${allPct}% all &nbsp;|&nbsp; ${failPct}% of fails</span>
+      </div>
+      <div style="position:relative;height:10px;background:var(--bg);border-radius:5px;overflow:hidden">
+        <div style="position:absolute;height:100%;width:${barAll}%;background:${col};opacity:0.25;border-radius:5px"></div>
+        <div style="position:absolute;height:100%;width:${barFail}%;background:${col};border-radius:5px"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const fuelContainer = document.getElementById('defectByFuel');
+  const fuelColors = {BEV:'#2d7a3a', Hybrid:'#185FA5', Diesel:'#8a5c00', Petrol:'#b33030', Other:'#6b6960'};
+  fuelContainer.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px">` +
+    Object.entries(d.by_fuel || {}).map(([fuel, chapters]) => {
+      const top3 = Object.entries(chapters).slice(0, 3);
+      const col = fuelColors[fuel] || '#6b6960';
+      return `<div style="background:var(--bg);border-radius:8px;padding:10px 12px">
+        <div style="font-size:12px;font-weight:500;color:${col};margin-bottom:8px">${fuel}</div>
+        ${top3.map(([name, rate]) => `
+          <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
+            <span style="color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:120px">${name}</span>
+            <span style="font-family:var(--mono);font-weight:500;color:var(--text)">${(rate*100).toFixed(0)}%</span>
+          </div>`).join('')}
+      </div>`;
+    }).join('') + `</div>`;
+}
 
 init();
 </script>
