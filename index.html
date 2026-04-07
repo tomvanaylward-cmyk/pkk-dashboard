@@ -225,8 +225,14 @@ async function init() {
     renderCoefs();
     renderDefects();
     renderDefectChart();
+    lockFuelForBrand('A', document.getElementById('brandA').value);
+    lockFuelForBrand('B', document.getElementById('brandB').value);
     document.querySelectorAll('select,input[type=range]').forEach(el => {
-      el.addEventListener('input', () => { syncSliders(); update(); });
+      el.addEventListener('input', () => {
+        if (el.id === 'brandA') lockFuelForBrand('A', el.value);
+        if (el.id === 'brandB') lockFuelForBrand('B', el.value);
+        syncSliders(); update();
+      });
     });
     update();
   } catch(e) {
@@ -259,16 +265,22 @@ function sigmoid(x){return 1/(1+Math.exp(-x));}
 
 function scaleNum(val, mean, std){return (val-mean)/std;}
 
+function inspNum(age) {
+  if (age < 4) return 1;
+  return Math.min(15, 1 + Math.floor((age - 4) / 2));
+}
+
 function predict(brand, fuel, age, km, ctrlType) {
   const c   = COEF;
   const bc  = getCoef(c.brand, brand);
   const fc  = getCoef(c.fuel, fuel);
   const tc  = getCoef(c.ctrl_type, ctrlType);
-  const sc  = c.scaler || {km_mean:174496,km_std:93517,age_mean:12.72,age_std:5.92};
+  const sc  = c.scaler || {km_mean:174496,km_std:93517,age_mean:12.72,age_std:5.92,insp_mean:3,insp_std:2};
   const nc  = c.numeric || {};
-  const kmS  = scaleNum(km*1000, sc.km_mean,  sc.km_std);
-  const ageS = scaleNum(age,     sc.age_mean, sc.age_std);
-  const numEff = (nc.km_scaled||0)*kmS + (nc.age_scaled||0)*ageS;
+  const kmS   = scaleNum(km*1000,  sc.km_mean,   sc.km_std);
+  const ageS  = scaleNum(age,      sc.age_mean,  sc.age_std);
+  const inspS = scaleNum(inspNum(age), sc.insp_mean||3, sc.insp_std||2);
+  const numEff = (nc.km_scaled||0)*kmS + (nc.age_scaled||0)*ageS + (nc.insp_scaled||0)*inspS;
   const int0 = c.intercept || 0;
   const mid = sigmoid(int0 + bc.coef + fc.coef + tc.coef + numEff);
   const lo  = sigmoid(int0 + bc.lo  + fc.lo  + tc.lo  + numEff);
@@ -515,6 +527,19 @@ function drawAgeChart(A, B, lA, lB) {
       scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%',font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}},x:{ticks:{font:{size:11},maxTicksLimit:12},grid:{display:false}}}
     }
   });
+}
+
+function lockFuelForBrand(side, brand) {
+  const bf = (COEF.brand_fuel || {})[brand];
+  const fSel = document.getElementById('fuel'+side);
+  if (bf && bf.exclusive) {
+    fSel.value = bf.dominant;
+    fSel.disabled = true;
+    fSel.title = `${brand} only produces ${bf.dominant} vehicles`;
+  } else {
+    fSel.disabled = false;
+    fSel.title = '';
+  }
 }
 
 function populateSelects() {
