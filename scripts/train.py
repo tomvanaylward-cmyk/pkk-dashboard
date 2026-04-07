@@ -1,9 +1,10 @@
 """
-PKK EU-kontroll — logistic regression pipeline (reliable version)
+PKK EU-kontroll — logistic regression pipeline v3
+- 80k rows per file (~480k total)
+- inspection_number feature (which inspection is this for the vehicle)
 - Fuel: BEV, Hybrid, Diesel, Petrol, Other
 - No fylke (national model)
-- Bootstrap CI via logistic regression standard errors
-- Fast: ~4 minutes on GitHub Actions
+- Bootstrap CI (8 resamples)
 """
 
 import os, json, zipfile, io, requests, pandas as pd, numpy as np
@@ -38,7 +39,8 @@ def read_zip(content):
                 sep=",", encoding="latin-1", on_bad_lines="skip",
                 quotechar='"', skipinitialspace=True,
                 usecols=["Kjøretøymerke","Drivstofftype","Kilometerstand",
-                         "Første gang registrert","PKK Kontrolltype",
+                         "Første gang registrert","Første gang registrert i Norge",
+                         "PKK Kontrolltype","PKK Intervall",
                          "Tillatt totalvekt opp til og med 3500",
                          "Tillatt totalvekt 3501-7500",
                          "Tillatt totalvekt over 7500",
@@ -51,7 +53,7 @@ def read_zip(content):
             frames.append(df)
     return pd.concat(frames, ignore_index=True) if frames else None
 
-def load_all_data(max_files=6, sample_per_file=40000):
+def load_all_data(max_files=6, sample_per_file=80000):
     zips = list_zip_files()[:max_files]
     print(f"Loading {len(zips)} files, {sample_per_file:,} rows each...")
     frames = []
@@ -92,15 +94,45 @@ def make_weight_col(df):
         w[df["Tillatt totalvekt over 7500"].fillna(0).astype(str).str.strip()=="1"] = "Tunge"
     return w
 
+def compute_inspection_number(df, now_year):
+    """
+    Estimate which inspection number this is for the vehicle.
+    Norway rules: first inspection at 4 years, then every 2 years.
+    inspection_number = 1 means first-ever inspection.
+    """
+    # use Norwegian registration year preferentially
+    reg_no  = pd.to_numeric(df.get("Første gang registrert i Norge"), errors="coerce")
+    reg_wld = pd.to_numeric(df.get("Første gang registrert"), errors="coerce")
+    reg     = reg_no.fillna(reg_wld)
+
+    age = (now_year - reg).clip(0, 50)
+
+    # interval from PKK Intervall column (years between inspections, typically 2)
+    interval = pd.to_numeric(df.get("PKK Intervall"), errors="coerce").fillna(2).clip(1, 4)
+
+    # first inspection deadline = 4 years after registration
+    # subsequent = every `interval` years
+    # inspection_number = 1 + max(0, floor((age - 4) / interval))
+    insp_num = 1 + ((age - 4) / interval).clip(lower=0).apply(np.floor)
+    return insp_num.clip(1, 15).fillna(1)
+
 def engineer_features(df):
     now_year = datetime.now().year
     out = pd.DataFrame(index=df.index)
+
     out["brand"] = df["Kjøretøymerke"].astype(str).str.strip().str.upper().str[:30]
     out["fuel"]  = df["Drivstofftype"].apply(classify_fuel)
     out["km"]    = pd.to_numeric(df["Kilometerstand"], errors="coerce").clip(0, 500_000)
-    reg = pd.to_numeric(df["Første gang registrert"], errors="coerce")
-    age = (now_year - reg).where(lambda x: (x >= 0) & (x <= 50))
-    out["age"]   = age.clip(0, 30)
+
+    reg_no  = pd.to_numeric(df.get("Første gang registrert i Norge"), errors="coerce")
+    reg_wld = pd.to_numeric(df.get("Første gang registrert"), errors="coerce")
+    reg     = reg_no.fillna(reg_wld)
+    age     = (now_year - reg).where(lambda x: (x >= 0) & (x <= 50))
+    out["age"] = age.clip(0, 30)
+
+    # inspection number — key new feature
+    out["insp_num"] = compute_inspection_number(df, now_year)
+
     ct = df["PKK Kontrolltype"].astype(str).str.strip().str.upper()
     out["ctrl_type"] = np.where(ct.str.startswith("E"), "E", "P")
     out["weight"]    = make_weight_col(df)
@@ -122,15 +154,14 @@ def engineer_features(df):
 
     print(f"Rows: {len(out):,} | Pass rate: {out['approved'].mean():.3f}")
     print(f"Fuel: {out['fuel'].value_counts().to_dict()}")
+    print(f"Inspection number distribution:\n{out['insp_num'].value_counts().sort_index().head(8)}")
     return out.reset_index(drop=True)
 
 def train_model(feat_df):
     X = feat_df.drop(columns=["approved"])
     y = feat_df["approved"]
-
     cat_features = ["brand","fuel","ctrl_type","weight"]
-    num_features = ["km","age"]
-
+    num_features = ["km","age","insp_num"]
     pre = ColumnTransformer([
         ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), cat_features),
         ("num", StandardScaler(), num_features),
@@ -148,38 +179,32 @@ def train_model(feat_df):
     return model, auc, X
 
 def bootstrap_ci(feat_df, n_boot=8):
-    """Bootstrap standard errors on logistic regression coefficients."""
     print(f"Bootstrap CI ({n_boot} resamples)...")
     cat_features = ["brand","fuel","ctrl_type","weight"]
-    num_features = ["km","age"]
+    num_features = ["km","age","insp_num"]
 
-    pre0 = ColumnTransformer([
-        ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), cat_features),
-        ("num", StandardScaler(), num_features),
-    ])
-    m0 = Pipeline([("pre", pre0),
-                   ("clf", LogisticRegression(max_iter=300, C=1.0,
-                                              class_weight="balanced", solver="saga"))])
-    X0 = feat_df.drop(columns=["approved"])
-    y0 = feat_df["approved"]
-    m0.fit(X0, y0)
-    names = list(m0.named_steps["pre"].get_feature_names_out())
-    n_feat = len(names)
-
-    boot_coefs = np.zeros((n_boot, n_feat))
-    for i in range(n_boot):
-        idx = np.random.choice(len(feat_df), size=len(feat_df), replace=True)
-        df_b = feat_df.iloc[idx]
-        X_b = df_b.drop(columns=["approved"])
-        y_b = df_b["approved"]
-        pre_b = ColumnTransformer([
+    def fit_lr(X, y):
+        pre = ColumnTransformer([
             ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), cat_features),
             ("num", StandardScaler(), num_features),
         ])
-        m_b = Pipeline([("pre", pre_b),
-                        ("clf", LogisticRegression(max_iter=300, C=1.0,
-                                                   class_weight="balanced", solver="saga"))])
-        m_b.fit(X_b, y_b)
+        m = Pipeline([("pre", pre),
+                      ("clf", LogisticRegression(max_iter=300, C=1.0,
+                                                 class_weight="balanced", solver="saga"))])
+        m.fit(X, y)
+        return m
+
+    X0 = feat_df.drop(columns=["approved"])
+    y0 = feat_df["approved"]
+    m0 = fit_lr(X0, y0)
+    names = list(m0.named_steps["pre"].get_feature_names_out())
+    n_feat = len(names)
+    boot_coefs = np.zeros((n_boot, n_feat))
+
+    for i in range(n_boot):
+        idx = np.random.choice(len(feat_df), size=len(feat_df), replace=True)
+        df_b = feat_df.iloc[idx]
+        m_b = fit_lr(df_b.drop(columns=["approved"]), df_b["approved"])
         names_b = list(m_b.named_steps["pre"].get_feature_names_out())
         coefs_b = m_b.named_steps["clf"].coef_[0]
         for j, nm in enumerate(names):
@@ -191,10 +216,10 @@ def bootstrap_ci(feat_df, n_boot=8):
     return dict(zip(names, stds.tolist())), names
 
 def extract_coefficients(model, feat_df, auc, stds, names):
-    clf  = model.named_steps["clf"]
-    pre  = model.named_steps["pre"]
+    clf   = model.named_steps["clf"]
+    pre   = model.named_steps["pre"]
     coefs = clf.coef_[0]
-    z = 1.96
+    z     = 1.96
 
     def group_with_ci(prefix):
         out = {}
@@ -212,39 +237,63 @@ def extract_coefficients(model, feat_df, auc, stds, names):
     sc = pre.named_transformers_["num"]
     num_map = {n: c for n, c in zip(names, coefs) if n.startswith("num__")}
 
+    # pass rate by inspection number for frontend calibration
+    insp_pass = feat_df.groupby("insp_num")["approved"].agg(["mean","count"])
+    insp_rates = {
+        int(k): {"pass_rate": round(float(v["mean"]),4), "n": int(v["count"])}
+        for k, v in insp_pass.iterrows()
+        if v["count"] >= 100
+    }
+
+    # also compute brand→fuel mapping from data
+    brand_fuel = {}
+    for brand in feat_df["brand"].unique():
+        sub = feat_df[feat_df["brand"]==brand]
+        dominant = sub["fuel"].value_counts()
+        if len(dominant) > 0:
+            # store top fuel and whether brand is exclusively one type
+            top = dominant.index[0]
+            top_pct = dominant.iloc[0] / len(sub)
+            brand_fuel[brand] = {
+                "dominant": top,
+                "exclusive": bool(top_pct > 0.95)
+            }
+
     return {
         "meta": {
             "trained_at": datetime.now(timezone.utc).isoformat(),
             "n_samples":  int(len(feat_df)),
             "auc_roc":    round(float(auc), 4),
             "pass_rate":  round(float(feat_df["approved"].mean()), 4),
-            "model":      "Logistic Regression",
+            "model":      "Logistic Regression v3",
         },
-        "intercept": round(float(clf.intercept_[0]), 4),
-        "brand":     group_with_ci("cat__brand_"),
-        "fuel":      group_with_ci("cat__fuel_"),
-        "ctrl_type": group_with_ci("cat__ctrl_type_"),
-        "weight":    group_with_ci("cat__weight_"),
+        "intercept":  round(float(clf.intercept_[0]), 4),
+        "brand":      group_with_ci("cat__brand_"),
+        "fuel":       group_with_ci("cat__fuel_"),
+        "ctrl_type":  group_with_ci("cat__ctrl_type_"),
+        "weight":     group_with_ci("cat__weight_"),
         "numeric": {
-            "km_scaled":  round(float(num_map.get("num__km",  0)), 6),
-            "age_scaled": round(float(num_map.get("num__age", 0)), 6),
-            "km_corr":    round(float(feat_df["km"].corr(feat_df["approved"])), 4),
-            "age_corr":   round(float(feat_df["age"].corr(feat_df["approved"])), 4),
+            "km_scaled":    round(float(num_map.get("num__km",      0)), 6),
+            "age_scaled":   round(float(num_map.get("num__age",     0)), 6),
+            "insp_scaled":  round(float(num_map.get("num__insp_num",0)), 6),
+            "km_corr":      round(float(feat_df["km"].corr(feat_df["approved"])),       4),
+            "age_corr":     round(float(feat_df["age"].corr(feat_df["approved"])),      4),
+            "insp_corr":    round(float(feat_df["insp_num"].corr(feat_df["approved"])), 4),
         },
         "scaler": {
-            "km_mean":  round(float(sc.mean_[0]),  2),
-            "km_std":   round(float(sc.scale_[0]), 2),
-            "age_mean": round(float(sc.mean_[1]),  2),
-            "age_std":  round(float(sc.scale_[1]), 2),
+            "km_mean":    round(float(sc.mean_[0]),  2),
+            "km_std":     round(float(sc.scale_[0]), 2),
+            "age_mean":   round(float(sc.mean_[1]),  2),
+            "age_std":    round(float(sc.scale_[1]), 2),
+            "insp_mean":  round(float(sc.mean_[2]),  2),
+            "insp_std":   round(float(sc.scale_[2]), 2),
         },
-        "pass_rate": round(float(feat_df["approved"].mean()), 4),
+        "insp_pass_rates": insp_rates,
+        "brand_fuel":      brand_fuel,
+        "pass_rate":       round(float(feat_df["approved"].mean()), 4),
     }
 
 def defect_analysis(raw_df):
-    """
-    Compute defect chapter statistics from full raw data.
-    Returns: total inspections with faults, rate per chapter, top fault points.
-    """
     CAP_NAMES = {
         "Ant 2-3er kap 0":  "Identification & documents",
         "Ant 2-3er kap 1":  "Brakes",
@@ -258,43 +307,33 @@ def defect_analysis(raw_df):
         "Ant 2-3er kap 9":  "Checks during drive",
         "Ant 2-3er kap 10": "Environment",
     }
-
-    # only failed inspections (godkjent = 0)
     raw = raw_df["Godkjent"].astype(str).str.strip().str.upper()
     failed = raw_df[raw.isin(["0","NEI","NO","FALSE","IKKE GODKJENT"])].copy()
     total_inspections = len(raw_df)
-    total_failed = len(failed)
 
     chapter_stats = []
     for col, name in CAP_NAMES.items():
         if col not in raw_df.columns:
             continue
-        # inspections where this chapter had at least one fault
         has_fault_all  = (pd.to_numeric(raw_df[col], errors="coerce").fillna(0) > 0)
         has_fault_fail = (pd.to_numeric(failed[col],  errors="coerce").fillna(0) > 0)
-        avg_faults     = pd.to_numeric(failed[col], errors="coerce").mean()
-
         chapter_stats.append({
-            "chapter":           col,
-            "name":              name,
-            "rate_all":          round(float(has_fault_all.mean()), 4),
-            "rate_failed":       round(float(has_fault_fail.mean()), 4),
-            "avg_faults_when_failed": round(float(avg_faults), 3),
+            "chapter":     col,
+            "name":        name,
+            "rate_all":    round(float(has_fault_all.mean()),  4),
+            "rate_failed": round(float(has_fault_fail.mean()), 4),
         })
-
     chapter_stats.sort(key=lambda x: x["rate_all"], reverse=True)
 
-    # by fuel type
-    fuel_col = "Drivstofftype"
     by_fuel = {}
-    if fuel_col in raw_df.columns:
+    if "Drivstofftype" in raw_df.columns:
         raw_df2 = raw_df.copy()
-        raw_df2["fuel_norm"] = raw_df2[fuel_col].apply(classify_fuel)
-        for fuel in ["BEV","Hybrid","Diesel","Petrol","Other"]:
+        raw_df2["fuel_norm"] = raw_df2["Drivstofftype"].apply(classify_fuel)
+        for fuel in ["BEV","Hybrid","Diesel","Petrol"]:
             sub = raw_df2[raw_df2["fuel_norm"]==fuel]
             if len(sub) < 100:
                 continue
-            sub_raw = sub["Godkjent"].astype(str).str.strip().str.upper()
+            sub_raw  = sub["Godkjent"].astype(str).str.strip().str.upper()
             sub_fail = sub[sub_raw.isin(["0","NEI","NO","FALSE","IKKE GODKJENT"])]
             top = {}
             for col, name in CAP_NAMES.items():
@@ -305,31 +344,31 @@ def defect_analysis(raw_df):
 
     return {
         "total_inspections": int(total_inspections),
-        "total_failed":      int(total_failed),
-        "fail_rate":         round(total_failed/total_inspections, 4),
+        "total_failed":      int(len(failed)),
+        "fail_rate":         round(len(failed)/total_inspections, 4),
         "chapters":          chapter_stats,
         "by_fuel":           by_fuel,
     }
 
-
 def main():
     os.makedirs("docs", exist_ok=True)
-    print("=== PKK Logistic Regression pipeline ===")
-    raw     = load_all_data(max_files=6, sample_per_file=40000)
+    print("=== PKK Logistic Regression pipeline v3 ===")
+    raw     = load_all_data(max_files=6, sample_per_file=80000)
     feat_df = engineer_features(raw)
     if len(feat_df) < 1000:
         raise RuntimeError(f"Too few rows ({len(feat_df)})")
     model, auc, X = train_model(feat_df)
     stds, names   = bootstrap_ci(feat_df, n_boot=8)
     coefs         = extract_coefficients(model, feat_df, auc, stds, names)
-    defects       = defect_analysis(raw)
-    coefs["defects"] = defects
+    coefs["defects"] = defect_analysis(raw)
 
     with open("docs/coefficients.json", "w") as f:
         json.dump(coefs, f, indent=2, ensure_ascii=False)
     print("\nSaved docs/coefficients.json")
     print(json.dumps(coefs["meta"], indent=2))
-    print(f"Top defect chapter: {defects['chapters'][0]['name']} ({defects['chapters'][0]['rate_all']*100:.1f}% of all inspections)")
+    d = coefs["defects"]
+    print(f"Top defect: {d['chapters'][0]['name']} ({d['chapters'][0]['rate_all']*100:.1f}% of all inspections)")
+    print(f"Brand→fuel mappings: {len(coefs['brand_fuel'])} brands")
 
 if __name__ == "__main__":
     main()
