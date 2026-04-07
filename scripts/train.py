@@ -42,6 +42,10 @@ def read_zip(content):
                          "Tillatt totalvekt opp til og med 3500",
                          "Tillatt totalvekt 3501-7500",
                          "Tillatt totalvekt over 7500",
+                         "Ant 2-3er kap 0","Ant 2-3er kap 1","Ant 2-3er kap 2",
+                         "Ant 2-3er kap 3","Ant 2-3er kap 4","Ant 2-3er kap 5",
+                         "Ant 2-3er kap 6","Ant 2-3er kap 7","Ant 2-3er kap 8",
+                         "Ant 2-3er kap 9","Ant 2-3er kap 10",
                          "Godkjent"]
             )
             frames.append(df)
@@ -236,6 +240,78 @@ def extract_coefficients(model, feat_df, auc, stds, names):
         "pass_rate": round(float(feat_df["approved"].mean()), 4),
     }
 
+def defect_analysis(raw_df):
+    """
+    Compute defect chapter statistics from full raw data.
+    Returns: total inspections with faults, rate per chapter, top fault points.
+    """
+    CAP_NAMES = {
+        "Ant 2-3er kap 0":  "Identification & documents",
+        "Ant 2-3er kap 1":  "Brakes",
+        "Ant 2-3er kap 2":  "Steering",
+        "Ant 2-3er kap 3":  "Visibility",
+        "Ant 2-3er kap 4":  "Lights & electrical",
+        "Ant 2-3er kap 5":  "Axles, wheels & tyres",
+        "Ant 2-3er kap 6":  "Chassis & body",
+        "Ant 2-3er kap 7":  "Other equipment",
+        "Ant 2-3er kap 8":  "Noise & emissions",
+        "Ant 2-3er kap 9":  "Checks during drive",
+        "Ant 2-3er kap 10": "Environment",
+    }
+
+    # only failed inspections (godkjent = 0)
+    raw = raw_df["Godkjent"].astype(str).str.strip().str.upper()
+    failed = raw_df[raw.isin(["0","NEI","NO","FALSE","IKKE GODKJENT"])].copy()
+    total_inspections = len(raw_df)
+    total_failed = len(failed)
+
+    chapter_stats = []
+    for col, name in CAP_NAMES.items():
+        if col not in raw_df.columns:
+            continue
+        # inspections where this chapter had at least one fault
+        has_fault_all  = (pd.to_numeric(raw_df[col], errors="coerce").fillna(0) > 0)
+        has_fault_fail = (pd.to_numeric(failed[col],  errors="coerce").fillna(0) > 0)
+        avg_faults     = pd.to_numeric(failed[col], errors="coerce").mean()
+
+        chapter_stats.append({
+            "chapter":           col,
+            "name":              name,
+            "rate_all":          round(float(has_fault_all.mean()), 4),
+            "rate_failed":       round(float(has_fault_fail.mean()), 4),
+            "avg_faults_when_failed": round(float(avg_faults), 3),
+        })
+
+    chapter_stats.sort(key=lambda x: x["rate_all"], reverse=True)
+
+    # by fuel type
+    fuel_col = "Drivstofftype"
+    by_fuel = {}
+    if fuel_col in raw_df.columns:
+        raw_df2 = raw_df.copy()
+        raw_df2["fuel_norm"] = raw_df2[fuel_col].apply(classify_fuel)
+        for fuel in ["BEV","Hybrid","Diesel","Petrol","Other"]:
+            sub = raw_df2[raw_df2["fuel_norm"]==fuel]
+            if len(sub) < 100:
+                continue
+            sub_raw = sub["Godkjent"].astype(str).str.strip().str.upper()
+            sub_fail = sub[sub_raw.isin(["0","NEI","NO","FALSE","IKKE GODKJENT"])]
+            top = {}
+            for col, name in CAP_NAMES.items():
+                if col in sub_fail.columns:
+                    rate = float((pd.to_numeric(sub_fail[col], errors="coerce").fillna(0)>0).mean())
+                    top[name] = round(rate, 4)
+            by_fuel[fuel] = dict(sorted(top.items(), key=lambda x: x[1], reverse=True))
+
+    return {
+        "total_inspections": int(total_inspections),
+        "total_failed":      int(total_failed),
+        "fail_rate":         round(total_failed/total_inspections, 4),
+        "chapters":          chapter_stats,
+        "by_fuel":           by_fuel,
+    }
+
+
 def main():
     os.makedirs("docs", exist_ok=True)
     print("=== PKK Logistic Regression pipeline ===")
@@ -246,11 +322,14 @@ def main():
     model, auc, X = train_model(feat_df)
     stds, names   = bootstrap_ci(feat_df, n_boot=8)
     coefs         = extract_coefficients(model, feat_df, auc, stds, names)
+    defects       = defect_analysis(raw)
+    coefs["defects"] = defects
 
     with open("docs/coefficients.json", "w") as f:
         json.dump(coefs, f, indent=2, ensure_ascii=False)
     print("\nSaved docs/coefficients.json")
     print(json.dumps(coefs["meta"], indent=2))
+    print(f"Top defect chapter: {defects['chapters'][0]['name']} ({defects['chapters'][0]['rate_all']*100:.1f}% of all inspections)")
 
 if __name__ == "__main__":
     main()
