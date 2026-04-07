@@ -241,32 +241,38 @@ function getCoef(obj, key) {
   return {coef:+v, lo:+v, hi:+v};
 }
 
+function sigmoid(x){return 1/(1+Math.exp(-x));}
+
+function scaleNum(val, mean, std){return (val-mean)/std;}
+
 function predict(brand, fuel, age, km, ctrlType) {
-  const base = COEF.pass_rate || 0.65;
-  const bc  = getCoef(COEF.brand, brand);
-  const fc  = getCoef(COEF.fuel, fuel);
-  const tc  = getCoef(COEF.ctrl_type, ctrlType);
-  const nc  = COEF.numeric || {};
-  const ageNorm = (age - 12.72) / 5.92;
-  const kmNorm  = (km * 1000 - 174496) / 93517;
-  const ageEff  = (nc.age_corr || -0.15) * ageNorm * 0.3;
-  const kmEff   = (nc.km_corr  || -0.12) * kmNorm  * 0.3;
-  const mid = Math.max(0.01, Math.min(0.99, base + bc.coef + fc.coef + tc.coef + ageEff + kmEff));
-  const lo  = Math.max(0.01, Math.min(0.99, base + bc.lo  + fc.lo  + tc.lo  + ageEff + kmEff));
-  const hi  = Math.max(0.01, Math.min(0.99, base + bc.hi  + fc.hi  + tc.hi  + ageEff + kmEff));
+  const c   = COEF;
+  const bc  = getCoef(c.brand, brand);
+  const fc  = getCoef(c.fuel, fuel);
+  const tc  = getCoef(c.ctrl_type, ctrlType);
+  const sc  = c.scaler || {km_mean:174496,km_std:93517,age_mean:12.72,age_std:5.92};
+  const nc  = c.numeric || {};
+  const kmS  = scaleNum(km*1000, sc.km_mean,  sc.km_std);
+  const ageS = scaleNum(age,     sc.age_mean, sc.age_std);
+  const numEff = (nc.km_scaled||0)*kmS + (nc.age_scaled||0)*ageS;
+  const int0 = c.intercept || 0;
+  const mid = sigmoid(int0 + bc.coef + fc.coef + tc.coef + numEff);
+  const lo  = sigmoid(int0 + bc.lo  + fc.lo  + tc.lo  + numEff);
+  const hi  = sigmoid(int0 + bc.hi  + fc.hi  + tc.hi  + numEff);
   return {mid, lo:Math.min(lo,hi), hi:Math.max(lo,hi)};
 }
 
 function getRiskFactors(brand, fuel, age, km, ctrlType) {
-  const base = COEF.pass_rate || 0.65;
-  const bc   = getCoef(COEF.brand, brand);
-  const fc   = getCoef(COEF.fuel, fuel);
-  const tc   = getCoef(COEF.ctrl_type, ctrlType);
-  const nc   = COEF.numeric || {};
-  const ageNorm = (age - 12.72) / 5.92;
-  const kmNorm  = (km * 1000 - 174496) / 93517;
-  const ageEff  = (nc.age_corr || -0.15) * ageNorm * 0.3;
-  const kmEff   = (nc.km_corr  || -0.12) * kmNorm  * 0.3;
+  const c   = COEF;
+  const bc  = getCoef(c.brand, brand);
+  const fc  = getCoef(c.fuel, fuel);
+  const tc  = getCoef(c.ctrl_type, ctrlType);
+  const sc  = c.scaler || {km_mean:174496,km_std:93517,age_mean:12.72,age_std:5.92};
+  const nc  = c.numeric || {};
+  const kmS  = scaleNum(km*1000, sc.km_mean, sc.km_std);
+  const ageS = scaleNum(age, sc.age_mean, sc.age_std);
+  const ageEff = (nc.age_scaled||0) * ageS;
+  const kmEff  = (nc.km_scaled||0)  * kmS;
 
   const factors = [
     {
