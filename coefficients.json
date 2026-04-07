@@ -1,6 +1,6 @@
 {
   "meta": {
-    "trained_at": "2026-04-07T08:03:55.047747+00:00",
+    "trained_at": "2026-04-07T17:52:47.257025+00:00",
     "n_samples": 239085,
     "auc_roc": 0.8375,
     "pass_rate": 0.6525,
@@ -10,298 +10,298 @@
   "brand": {
     "ALFA ROMEO": {
       "coef": -0.3557,
-      "lo": -0.7087,
-      "hi": -0.0026
+      "lo": -0.6242,
+      "hi": -0.0871
     },
     "AUDI": {
       "coef": 0.6625,
-      "lo": 0.6054,
-      "hi": 0.7195
+      "lo": 0.6268,
+      "hi": 0.6982
     },
     "BMW": {
       "coef": 0.4701,
-      "lo": 0.4217,
-      "hi": 0.5185
+      "lo": 0.3873,
+      "hi": 0.5528
     },
     "BMW I": {
       "coef": -0.1144,
-      "lo": -0.1813,
-      "hi": -0.0475
+      "lo": -0.2775,
+      "hi": 0.0487
     },
     "BURSTNER": {
       "coef": 0.0922,
-      "lo": -0.1582,
-      "hi": 0.3426
+      "lo": -0.1603,
+      "hi": 0.3447
     },
     "CHEVROLET": {
       "coef": 0.1427,
-      "lo": -0.1021,
-      "hi": 0.3876
+      "lo": -0.0108,
+      "hi": 0.2963
     },
     "CITROEN": {
       "coef": -0.316,
-      "lo": -0.3915,
-      "hi": -0.2405
+      "lo": -0.3949,
+      "hi": -0.2371
     },
     "DANGEL": {
       "coef": -0.4568,
-      "lo": -0.5623,
-      "hi": -0.3514
+      "lo": -0.6569,
+      "hi": -0.2567
     },
     "EKERI": {
       "coef": -0.2405,
-      "lo": -0.5235,
-      "hi": 0.0424
+      "lo": -0.528,
+      "hi": 0.047
     },
     "FIAT": {
       "coef": -0.49,
-      "lo": -0.6391,
-      "hi": -0.3408
+      "lo": -0.6123,
+      "hi": -0.3677
     },
     "FORD": {
       "coef": 0.186,
-      "lo": 0.1401,
-      "hi": 0.2319
+      "lo": 0.1281,
+      "hi": 0.2439
     },
     "HFR": {
       "coef": -0.9059,
-      "lo": -1.1701,
-      "hi": -0.6416
+      "lo": -1.1223,
+      "hi": -0.6894
     },
     "HONDA": {
       "coef": 0.447,
-      "lo": 0.3299,
-      "hi": 0.564
+      "lo": 0.3534,
+      "hi": 0.5405
     },
     "HYMER": {
       "coef": 0.1653,
-      "lo": -0.1246,
-      "hi": 0.4552
+      "lo": -0.061,
+      "hi": 0.3915
     },
     "HYUNDAI": {
       "coef": 0.2642,
-      "lo": 0.2033,
-      "hi": 0.325
+      "lo": 0.1818,
+      "hi": 0.3466
     },
     "ISTRAIL": {
       "coef": -0.3595,
-      "lo": -0.6093,
-      "hi": -0.1097
+      "lo": -0.5858,
+      "hi": -0.1333
     },
     "ISUZU": {
       "coef": -0.1978,
-      "lo": -0.321,
-      "hi": -0.0747
+      "lo": -0.3406,
+      "hi": -0.0551
     },
     "IVECO": {
       "coef": -0.8719,
-      "lo": -1.1782,
-      "hi": -0.5657
+      "lo": -1.1882,
+      "hi": -0.5557
     },
     "JAGUAR": {
       "coef": 0.5772,
-      "lo": 0.4025,
-      "hi": 0.752
+      "lo": 0.2825,
+      "hi": 0.872
     },
     "JEEP": {
       "coef": 0.3064,
-      "lo": 0.1675,
-      "hi": 0.4453
+      "lo": -0.0032,
+      "hi": 0.6159
     },
     "KIA": {
       "coef": 0.2077,
-      "lo": 0.1154,
-      "hi": 0.3
+      "lo": 0.1433,
+      "hi": 0.2721
     },
     "KRONE": {
       "coef": -0.1723,
-      "lo": -0.418,
-      "hi": 0.0734
+      "lo": -0.5318,
+      "hi": 0.1872
     },
     "LAND ROVER": {
       "coef": 0.3838,
-      "lo": 0.2039,
-      "hi": 0.5637
+      "lo": 0.2306,
+      "hi": 0.537
     },
     "LEXUS": {
       "coef": 0.857,
-      "lo": 0.7662,
-      "hi": 0.9478
+      "lo": 0.6083,
+      "hi": 1.1057
     },
     "MAN": {
       "coef": -0.9713,
-      "lo": -1.1295,
-      "hi": -0.8132
+      "lo": -1.0899,
+      "hi": -0.8527
     },
     "MAUR BILPÅBYGG": {
       "coef": -0.1242,
-      "lo": -0.3438,
-      "hi": 0.0954
+      "lo": -0.3885,
+      "hi": 0.1401
     },
     "MAZDA": {
       "coef": 0.4019,
-      "lo": 0.3357,
-      "hi": 0.4682
+      "lo": 0.3394,
+      "hi": 0.4645
     },
     "MERCEDES-BENZ": {
       "coef": 0.193,
-      "lo": 0.1483,
-      "hi": 0.2377
+      "lo": 0.1382,
+      "hi": 0.2479
     },
     "MG": {
       "coef": -0.5668,
-      "lo": -0.7105,
-      "hi": -0.423
+      "lo": -0.8024,
+      "hi": -0.3311
     },
     "MINI": {
       "coef": 0.3868,
-      "lo": 0.1932,
-      "hi": 0.5803
+      "lo": 0.2585,
+      "hi": 0.515
     },
     "MITSUBISHI": {
       "coef": 0.2721,
-      "lo": 0.2286,
-      "hi": 0.3157
+      "lo": 0.1961,
+      "hi": 0.3481
     },
     "NISSAN": {
       "coef": -0.2682,
-      "lo": -0.3349,
-      "hi": -0.2015
+      "lo": -0.3121,
+      "hi": -0.2244
     },
     "NOR SLEP": {
       "coef": -0.5436,
-      "lo": -1.0182,
-      "hi": -0.069
+      "lo": -0.7141,
+      "hi": -0.373
     },
     "OPEL": {
       "coef": 0.1052,
-      "lo": 0.0614,
-      "hi": 0.1489
+      "lo": 0.0339,
+      "hi": 0.1765
     },
     "OTHER": {
       "coef": -0.5543,
-      "lo": -0.5995,
-      "hi": -0.509
+      "lo": -0.5838,
+      "hi": -0.5248
     },
     "PEUGEOT": {
       "coef": -0.0975,
-      "lo": -0.1659,
-      "hi": -0.029
+      "lo": -0.1486,
+      "hi": -0.0463
     },
     "POLESTAR": {
       "coef": 0.5163,
-      "lo": 0.3983,
-      "hi": 0.6342
+      "lo": 0.2416,
+      "hi": 0.791
     },
     "PORSCHE": {
       "coef": 0.7179,
-      "lo": 0.5931,
-      "hi": 0.8428
+      "lo": 0.6651,
+      "hi": 0.7708
     },
     "RENAULT": {
       "coef": -0.6157,
-      "lo": -0.7378,
-      "hi": -0.4936
+      "lo": -0.7255,
+      "hi": -0.5059
     },
     "SAAB": {
       "coef": 0.3182,
-      "lo": 0.1611,
-      "hi": 0.4752
+      "lo": 0.1019,
+      "hi": 0.5344
     },
     "SCANIA": {
       "coef": -0.662,
-      "lo": -0.779,
-      "hi": -0.545
+      "lo": -0.7147,
+      "hi": -0.6093
     },
     "SCHMITZ CARGOBULL": {
       "coef": 0.0638,
-      "lo": -0.1293,
-      "hi": 0.2568
+      "lo": -0.1503,
+      "hi": 0.2778
     },
     "SKODA": {
       "coef": 0.4337,
-      "lo": 0.3725,
-      "hi": 0.4949
+      "lo": 0.3884,
+      "hi": 0.4789
     },
     "SSANGYONG": {
       "coef": -0.4559,
-      "lo": -0.7687,
-      "hi": -0.1431
+      "lo": -0.6084,
+      "hi": -0.3034
     },
     "SUBARU": {
       "coef": 0.4386,
-      "lo": 0.3444,
-      "hi": 0.5328
+      "lo": 0.3738,
+      "hi": 0.5034
     },
     "SUZUKI": {
       "coef": 0.4214,
-      "lo": 0.361,
-      "hi": 0.4819
+      "lo": 0.336,
+      "hi": 0.5068
     },
     "TESLA": {
       "coef": -0.5972,
-      "lo": -0.6631,
-      "hi": -0.5313
+      "lo": -0.6451,
+      "hi": -0.5492
     },
     "TESLA MOTORS": {
       "coef": -0.4682,
-      "lo": -0.669,
-      "hi": -0.2674
+      "lo": -0.5666,
+      "hi": -0.3698
     },
     "TOYOTA": {
       "coef": 0.449,
-      "lo": 0.4192,
-      "hi": 0.4787
+      "lo": 0.4139,
+      "hi": 0.484
     },
     "VOLKSWAGEN": {
       "coef": 0.3537,
-      "lo": 0.3221,
-      "hi": 0.3852
+      "lo": 0.3199,
+      "hi": 0.3875
     },
     "VOLVO": {
       "coef": 0.5793,
-      "lo": 0.5171,
-      "hi": 0.6416
+      "lo": 0.5308,
+      "hi": 0.6278
     }
   },
   "fuel": {
     "BEV": {
       "coef": 0.5518,
-      "lo": 0.5001,
-      "hi": 0.6036
+      "lo": 0.5086,
+      "hi": 0.595
     },
     "Diesel": {
       "coef": 0.2271,
-      "lo": 0.1874,
-      "hi": 0.2669
+      "lo": 0.1948,
+      "hi": 0.2595
     },
     "Other": {
       "coef": -1.232,
-      "lo": -1.3485,
-      "hi": -1.1155
+      "lo": -1.3235,
+      "hi": -1.1404
     },
     "Petrol": {
       "coef": 0.4601,
-      "lo": 0.4276,
-      "hi": 0.4926
+      "lo": 0.4317,
+      "hi": 0.4886
     }
   },
   "ctrl_type": {
     "E": {
       "coef": 1.7625,
-      "lo": 1.745,
-      "hi": 1.7801
+      "lo": 1.7451,
+      "hi": 1.78
     },
     "P": {
       "coef": -1.7554,
       "lo": -1.7729,
-      "hi": -1.738
+      "hi": -1.7379
     }
   },
   "weight": {
     "Lette": {
       "coef": 0.0071,
-      "lo": 0.007,
+      "lo": 0.0071,
       "hi": 0.0072
     }
   },
@@ -317,5 +317,143 @@
     "age_mean": 12.72,
     "age_std": 5.92
   },
-  "pass_rate": 0.6525
+  "pass_rate": 0.6525,
+  "defects": {
+    "total_inspections": 240000,
+    "total_failed": 83458,
+    "fail_rate": 0.3477,
+    "chapters": [
+      {
+        "chapter": "Ant 2-3er kap 1",
+        "name": "Brakes",
+        "rate_all": 0.1864,
+        "rate_failed": 0.536,
+        "avg_faults_when_failed": 0.909
+      },
+      {
+        "chapter": "Ant 2-3er kap 4",
+        "name": "Lights & electrical",
+        "rate_all": 0.1751,
+        "rate_failed": 0.5034,
+        "avg_faults_when_failed": 0.955
+      },
+      {
+        "chapter": "Ant 2-3er kap 5",
+        "name": "Axles, wheels & tyres",
+        "rate_all": 0.15,
+        "rate_failed": 0.4314,
+        "avg_faults_when_failed": 0.6
+      },
+      {
+        "chapter": "Ant 2-3er kap 6",
+        "name": "Chassis & body",
+        "rate_all": 0.0719,
+        "rate_failed": 0.2066,
+        "avg_faults_when_failed": 0.291
+      },
+      {
+        "chapter": "Ant 2-3er kap 8",
+        "name": "Noise & emissions",
+        "rate_all": 0.0375,
+        "rate_failed": 0.108,
+        "avg_faults_when_failed": 0.134
+      },
+      {
+        "chapter": "Ant 2-3er kap 2",
+        "name": "Steering",
+        "rate_all": 0.0354,
+        "rate_failed": 0.1017,
+        "avg_faults_when_failed": 0.114
+      },
+      {
+        "chapter": "Ant 2-3er kap 3",
+        "name": "Visibility",
+        "rate_all": 0.0284,
+        "rate_failed": 0.0818,
+        "avg_faults_when_failed": 0.089
+      },
+      {
+        "chapter": "Ant 2-3er kap 7",
+        "name": "Other equipment",
+        "rate_all": 0.0242,
+        "rate_failed": 0.0695,
+        "avg_faults_when_failed": 0.078
+      },
+      {
+        "chapter": "Ant 2-3er kap 0",
+        "name": "Identification & documents",
+        "rate_all": 0.0082,
+        "rate_failed": 0.0235,
+        "avg_faults_when_failed": 0.024
+      },
+      {
+        "chapter": "Ant 2-3er kap 10",
+        "name": "Environment",
+        "rate_all": 0.0014,
+        "rate_failed": 0.004,
+        "avg_faults_when_failed": 0.004
+      },
+      {
+        "chapter": "Ant 2-3er kap 9",
+        "name": "Checks during drive",
+        "rate_all": 0.0008,
+        "rate_failed": 0.0023,
+        "avg_faults_when_failed": 0.003
+      }
+    ],
+    "by_fuel": {
+      "BEV": {
+        "Brakes": 0.5387,
+        "Axles, wheels & tyres": 0.4205,
+        "Lights & electrical": 0.3408,
+        "Steering": 0.0805,
+        "Visibility": 0.0664,
+        "Chassis & body": 0.0512,
+        "Other equipment": 0.0358,
+        "Identification & documents": 0.0098,
+        "Noise & emissions": 0.0035,
+        "Checks during drive": 0.0033,
+        "Environment": 0.0006
+      },
+      "Diesel": {
+        "Lights & electrical": 0.5504,
+        "Brakes": 0.5131,
+        "Axles, wheels & tyres": 0.4566,
+        "Chassis & body": 0.2288,
+        "Noise & emissions": 0.1296,
+        "Steering": 0.1191,
+        "Visibility": 0.0928,
+        "Other equipment": 0.0844,
+        "Identification & documents": 0.0277,
+        "Environment": 0.0051,
+        "Checks during drive": 0.0031
+      },
+      "Petrol": {
+        "Brakes": 0.5721,
+        "Lights & electrical": 0.4653,
+        "Axles, wheels & tyres": 0.391,
+        "Chassis & body": 0.2014,
+        "Noise & emissions": 0.1138,
+        "Steering": 0.0768,
+        "Visibility": 0.0723,
+        "Other equipment": 0.0576,
+        "Identification & documents": 0.0165,
+        "Environment": 0.0033,
+        "Checks during drive": 0.0001
+      },
+      "Other": {
+        "Brakes": 0.6351,
+        "Lights & electrical": 0.5597,
+        "Chassis & body": 0.408,
+        "Axles, wheels & tyres": 0.357,
+        "Steering": 0.0724,
+        "Identification & documents": 0.0559,
+        "Noise & emissions": 0.0409,
+        "Other equipment": 0.021,
+        "Visibility": 0.0188,
+        "Checks during drive": 0.0034,
+        "Environment": 0.0023
+      }
+    }
+  }
 }
