@@ -125,19 +125,20 @@ footer a{color:var(--muted)}
         <div class="card-title">Vehicle A</div>
         <div class="field"><label>Brand</label><select id="brandA"></select></div>
         <div class="field"><label>Fuel type</label><select id="fuelA"></select></div>
-        <div class="field"><label>Age — <span id="ageA-out">4</span> years</label><div class="slider-wrap"><input type="range" id="ageA" min="1" max="25" value="4" step="1"><span class="slider-out" id="ageA-disp">4 yr</span></div></div>
+        <div class="field"><label>First registered in Norway</label><select id="regA"></select></div>
         <div class="field"><label>Odometer — <span id="kmA-out">60 000</span> km</label><div class="slider-wrap"><input type="range" id="kmA" min="0" max="400" value="60" step="5"><span class="slider-out" id="kmA-disp">60k</span></div></div>
         <div class="field"><label>Control type</label><select id="typeA"><option value="P">Periodisk (P)</option><option value="E">Etterkontroll (E)</option></select></div>
+        <div id="inspInfoA" style="font-size:12px;font-family:var(--mono);padding:8px 10px;border-radius:7px;margin-bottom:10px;line-height:1.5"></div>
         <div class="result-area">
           <div class="prob-big" id="probA">—</div>
-          <div class="prob-sub">probability of passing</div>
+          <div class="prob-sub" id="probSubA">probability of passing</div>
           <div class="prob-bar-track"><div class="prob-bar-fill" id="barA"></div></div>
           <div class="ci-row">
             <span class="ci-lo" id="ciLoA">—</span>
             <div class="ci-track"><div class="ci-range" id="ciRangeA"></div><div class="ci-dot" id="ciDotA"></div></div>
             <span class="ci-hi" id="ciHiA">—</span>
           </div>
-          <div class="ci-note">95% confidence interval</div>
+          <div class="ci-note" id="ciNoteA">95% confidence interval</div>
           <div class="verdict-badge" id="verdictA"></div>
         </div>
       </div>
@@ -146,19 +147,20 @@ footer a{color:var(--muted)}
         <div class="card-title">Vehicle B</div>
         <div class="field"><label>Brand</label><select id="brandB"></select></div>
         <div class="field"><label>Fuel type</label><select id="fuelB"></select></div>
-        <div class="field"><label>Age — <span id="ageB-out">4</span> years</label><div class="slider-wrap"><input type="range" id="ageB" min="1" max="25" value="4" step="1"><span class="slider-out" id="ageB-disp">4 yr</span></div></div>
+        <div class="field"><label>First registered in Norway</label><select id="regB"></select></div>
         <div class="field"><label>Odometer — <span id="kmB-out">60 000</span> km</label><div class="slider-wrap"><input type="range" id="kmB" min="0" max="400" value="60" step="5"><span class="slider-out" id="kmB-disp">60k</span></div></div>
         <div class="field"><label>Control type</label><select id="typeB"><option value="P">Periodisk (P)</option><option value="E">Etterkontroll (E)</option></select></div>
+        <div id="inspInfoB" style="font-size:12px;font-family:var(--mono);padding:8px 10px;border-radius:7px;margin-bottom:10px;line-height:1.5"></div>
         <div class="result-area">
           <div class="prob-big" id="probB">—</div>
-          <div class="prob-sub">probability of passing</div>
+          <div class="prob-sub" id="probSubB">probability of passing</div>
           <div class="prob-bar-track"><div class="prob-bar-fill" id="barB"></div></div>
           <div class="ci-row">
             <span class="ci-lo" id="ciLoB">—</span>
             <div class="ci-track"><div class="ci-range" id="ciRangeB"></div><div class="ci-dot" id="ciDotB"></div></div>
             <span class="ci-hi" id="ciHiB">—</span>
           </div>
-          <div class="ci-note">95% confidence interval</div>
+          <div class="ci-note" id="ciNoteB">95% confidence interval</div>
           <div class="verdict-badge" id="verdictB"></div>
         </div>
       </div>
@@ -231,7 +233,8 @@ async function init() {
       el.addEventListener('input', () => {
         if (el.id === 'brandA') lockFuelForBrand('A', el.value);
         if (el.id === 'brandB') lockFuelForBrand('B', el.value);
-        syncSliders(); update();
+        syncSliders();
+        update();
       });
     });
     update();
@@ -243,14 +246,32 @@ async function init() {
   }
 }
 
+const NOW_YEAR = new Date().getFullYear();
+
+function getInspectionStatus(regYear) {
+  const age = NOW_YEAR - regYear;
+  const firstDue = regYear + 4;
+  if (age < 4) {
+    return {valid:false, inspNum:1, age:Math.max(age,1),
+      message:`Not due yet — first PKK inspection due ${firstDue}`,
+      color:'var(--pass)', bg:'var(--pass-bg)'};
+  }
+  const inspNum = Math.min(15, 1 + Math.floor((age - 4) / 2));
+  const nextDue = firstDue + (inspNum - 1) * 2;
+  const overdue = NOW_YEAR > nextDue;
+  return {
+    valid: true, inspNum, age,
+    message: `Inspection #${inspNum} — ${overdue ? 'overdue since' : 'due'} ${nextDue}`,
+    color: overdue ? 'var(--fail)' : 'var(--warn)',
+    bg:    overdue ? 'var(--fail-bg)' : 'var(--warn-bg)',
+  };
+}
+
 function syncSliders() {
   ['A','B'].forEach(s => {
-    const age = document.getElementById('age'+s).value;
-    const km  = document.getElementById('km'+s).value;
-    document.getElementById('age'+s+'-out').textContent  = age;
-    document.getElementById('age'+s+'-disp').textContent = age + ' yr';
-    document.getElementById('km'+s+'-out').textContent   = (km*1000).toLocaleString('no-NO');
-    document.getElementById('km'+s+'-disp').textContent  = km + 'k';
+    const km = document.getElementById('km'+s).value;
+    document.getElementById('km'+s+'-out').textContent  = (km*1000).toLocaleString('no-NO');
+    document.getElementById('km'+s+'-disp').textContent = km+'k';
   });
 }
 
@@ -448,16 +469,48 @@ function verdict(p) {
 }
 
 function getVals(s) {
+  const regYear = +document.getElementById('reg'+s).value;
+  const status  = getInspectionStatus(regYear);
   return {
     brand:    document.getElementById('brand'+s).value,
     fuel:     document.getElementById('fuel'+s).value,
-    age:      +document.getElementById('age'+s).value,
+    age:      status.age,
+    inspNum:  status.inspNum,
     km:       +document.getElementById('km'+s).value,
     ctrlType: document.getElementById('type'+s).value,
+    status,
+    regYear,
   };
 }
 
-function renderResult(s, p) {
+function renderResult(s, p, vals) {
+  const status = vals.status;
+  const info = document.getElementById('inspInfo'+s);
+  info.textContent = status.message;
+  info.style.background = status.bg;
+  info.style.color = status.color;
+
+  if (!status.valid) {
+    document.getElementById('prob'+s).textContent = '—';
+    document.getElementById('prob'+s).style.color = 'var(--muted)';
+    document.getElementById('bar'+s).style.width = '0%';
+    document.getElementById('ciLo'+s).textContent = '';
+    document.getElementById('ciHi'+s).textContent = '';
+    document.getElementById('ciNote'+s).textContent = '';
+    document.getElementById('ciRange'+s).style.width = '0%';
+    document.getElementById('ciDot'+s).style.left = '0%';
+    const ipr = (COEF.insp_pass_rates||{})[1];
+    document.getElementById('probSub'+s).textContent =
+      ipr ? `nationally ${(ipr.pass_rate*100).toFixed(1)}% pass their 1st inspection` : 'not yet due';
+    document.getElementById('verdict'+s).textContent = '';
+    return;
+  }
+
+  // show national rate for this inspection number
+  const ipr = (COEF.insp_pass_rates||{})[status.inspNum];
+  document.getElementById('probSub'+s).textContent =
+    ipr ? `nationally ${(ipr.pass_rate*100).toFixed(1)}% pass inspection #${status.inspNum}` : 'probability of passing';
+
   const pct = (p.mid*100).toFixed(1)+'%';
   const col = probColor(p.mid);
   document.getElementById('prob'+s).textContent = pct;
@@ -468,6 +521,7 @@ function renderResult(s, p) {
   const hiPct = (p.hi*100).toFixed(1);
   document.getElementById('ciLo'+s).textContent = loPct+'%';
   document.getElementById('ciHi'+s).textContent = hiPct+'%';
+  document.getElementById('ciNote'+s).textContent = '95% confidence interval';
   document.getElementById('ciRange'+s).style.left = loPct+'%';
   document.getElementById('ciRange'+s).style.width = ((p.hi-p.lo)*100).toFixed(1)+'%';
   document.getElementById('ciRange'+s).style.background = col;
@@ -482,8 +536,8 @@ function update() {
   const A = getVals('A'), B = getVals('B');
   const pA = predict(A.brand, A.fuel, A.age, A.km, A.ctrlType);
   const pB = predict(B.brand, B.fuel, B.age, B.km, B.ctrlType);
-  renderResult('A', pA);
-  renderResult('B', pB);
+  renderResult('A', pA, A);
+  renderResult('B', pB, B);
   renderRiskPanel('A', A.brand, A.fuel, A.age, A.km, A.ctrlType, pA);
   renderRiskPanel('B', B.brand, B.fuel, B.age, B.km, B.ctrlType, pB);
 
@@ -543,6 +597,9 @@ function lockFuelForBrand(side, brand) {
 }
 
 function populateSelects() {
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({length:30}, (_,i) => currentYear - i);
+
   ['A','B'].forEach((s,si) => {
     const bSel = document.getElementById('brand'+s);
     const brands = Object.keys(COEF.brand||{}).sort();
@@ -556,6 +613,19 @@ function populateSelects() {
     fSel.innerHTML = fuels.map(f=>`<option value="${f}">${f}</option>`).join('');
     if(si===0){const di=fuels.indexOf('Diesel');if(di>=0)fSel.selectedIndex=di;}
     if(si===1){const ei=fuels.indexOf('BEV');if(ei>=0)fSel.selectedIndex=ei;}
+
+    const rSel = document.getElementById('reg'+s);
+    rSel.innerHTML = years.map(y => {
+      const status = getInspectionStatus(y);
+      const label = status.valid
+        ? `${y} — inspection #${status.inspNum}`
+        : `${y} — not due until ${y+4}`;
+      return `<option value="${y}">${label}</option>`;
+    }).join('');
+    // default: vehicle registered 8 years ago (2 inspections done)
+    const defaultYear = currentYear - 8;
+    const defIdx = years.indexOf(defaultYear);
+    if(defIdx>=0) rSel.selectedIndex=defIdx;
   });
 }
 
