@@ -94,6 +94,15 @@ select{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:
 .coef-ci-text{font-size:9px;color:var(--muted);font-family:var(--mono)}
 footer{text-align:center;font-size:11px;color:var(--muted);padding:2rem 1rem;border-top:1px solid var(--border);margin-top:1rem;line-height:1.8}
 footer a{color:var(--muted)}
+.nav-btn{font-family:var(--body);font-size:13px;font-weight:500;padding:6px 14px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s}
+.nav-btn:hover{background:var(--bg);color:var(--text)}
+.nav-btn.active{background:var(--text);color:var(--surface);border-color:var(--text)}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:2rem}
+@media(max-width:700px){.about-grid{grid-template-columns:1fr}}
+.about-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;display:flex;gap:14px;align-items:flex-start}
+.about-icon{width:32px;height:32px;border-radius:8px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;font-weight:500;color:var(--muted);flex-shrink:0}
+.about-title{font-family:var(--display);font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:6px}
+.about-body{font-size:13px;color:var(--muted);line-height:1.7}
 .loading-overlay{text-align:center;padding:3rem;font-family:var(--mono);font-size:13px;color:var(--muted)}
 .error-box{background:var(--fail-bg);border:1px solid #e5b3b3;border-radius:8px;padding:16px;font-size:13px;color:var(--fail);font-family:var(--mono)}
 </style>
@@ -101,16 +110,23 @@ footer a{color:var(--muted)}
 <body>
 <header>
   <div class="logo">EU<span>kontroll</span>.no — PKK predictor</div>
-  <div class="meta-pill"><span class="dot-live"></span><span id="header-trained">loading…</span></div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <nav style="display:flex;gap:4px">
+      <button class="nav-btn active" id="nav-predictor" onclick="showPage('predictor')">Predictor</button>
+      <button class="nav-btn" id="nav-about" onclick="showPage('about')">About & guide</button>
+    </nav>
+    <div class="meta-pill"><span class="dot-live"></span><span id="header-trained">loading…</span></div>
+  </div>
 </header>
 <main>
   <div id="app-loading" class="loading-overlay">Loading model…</div>
   <div id="app-error" class="error-box" style="display:none"></div>
   <div id="app" style="display:none">
 
+  <div id="page-predictor">
     <div class="hero">
       <h1>Will your car pass the EU-kontroll?</h1>
-      <p>XGBoost model trained on Statens vegvesen's open PKK dataset — 300,000 real inspection records. Retrained nightly via GitHub Actions.</p>
+      <p>Logistic regression trained on Statens vegvesen's open PKK dataset. Retrained nightly via GitHub Actions.</p>
     </div>
 
     <div class="stats-row">
@@ -203,7 +219,100 @@ footer a{color:var(--muted)}
       </div>
     </div>
 
-  </div>
+  </div><!-- end page-predictor -->
+
+  <div id="page-about" style="display:none">
+    <div class="hero">
+      <h1>About this dashboard</h1>
+      <p>A guide for leadership and non-technical users on how to read and interpret the PKK pass probability predictions.</p>
+    </div>
+
+    <div class="about-grid">
+
+      <div class="about-section">
+        <div class="about-icon">?</div>
+        <div>
+          <div class="about-title">What is this dashboard?</div>
+          <div class="about-body">This tool predicts the probability that a specific vehicle will pass its mandatory Norwegian vehicle inspection — the EU-kontroll (PKK). It is built on open data from Statens vegvesen and updates automatically every night with the latest inspection records.</div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <div class="about-icon">%</div>
+        <div>
+          <div class="about-title">What does the percentage mean?</div>
+          <div class="about-body">A prediction of <strong>72%</strong> means: out of 100 vehicles with identical brand, fuel type, age and mileage, approximately 72 would be expected to pass their PKK inspection. It is a statistical estimate — not a guarantee for any individual vehicle.</div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <div class="about-icon">~</div>
+        <div>
+          <div class="about-title">What does the confidence interval mean?</div>
+          <div class="about-body">The range shown below the percentage (e.g. <strong>68% – 76%</strong>) is the 95% confidence interval. This means we are 95% confident the true pass rate for this type of vehicle falls within that range. A narrow interval means high certainty. A wide interval means the model is less sure — treat wide-interval predictions as directional rather than precise.</div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <div class="about-icon">#</div>
+        <div>
+          <div class="about-title">What is the inspection number?</div>
+          <div class="about-body">In Norway, vehicles must have their first PKK inspection 4 years after registration, then every 2 years. The dashboard automatically calculates which inspection number a vehicle is on based on its registration year. A vehicle registered in 2018 is now on its <strong>3rd inspection</strong> (due 2026). First-time inspections pass at a much higher rate (~85%) than later ones (~65–70%).</div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <div class="about-icon">!</div>
+        <div>
+          <div class="about-title">Why is Tesla's pass rate low?</div>
+          <div class="about-body">Tesla's negative coefficient in the model reflects the Norwegian fleet as a whole. Norway has one of the world's oldest Tesla fleets — many vehicles registered in 2013–2016 are now on their 5th or 6th inspection and have accumulated real faults (suspension, door seals, 12V battery, brake wear). Newer models (Model 3 from 2019+, Model Y from 2021+) likely perform better than the brand-wide figure suggests. The model cannot distinguish between models within a brand.</div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <div class="about-icon">i</div>
+        <div>
+          <div class="about-title">What does AUC-ROC 0.836 mean?</div>
+          <div class="about-body">AUC-ROC measures how well the model separates vehicles that pass from those that fail. A score of <strong>1.0</strong> is perfect prediction. A score of <strong>0.5</strong> is no better than random guessing. Our score of <strong>0.836</strong> is considered strong for this type of data — roughly equivalent to saying the model correctly ranks a passing vehicle above a failing one 84% of the time.</div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <div class="about-icon">~</div>
+        <div>
+          <div class="about-title">What are the most common failure reasons?</div>
+          <div class="about-body">Nationally, the three most common failure chapters are: <strong>Brakes</strong> (most frequent across all fuel types), <strong>Lights & electrical</strong>, and <strong>Axles, wheels & tyres</strong>. Electric vehicles rarely fail on emissions but still fail on brakes and lights. The full breakdown is shown in the "Most common failure chapters" section on the predictor page.</div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <div class="about-icon">E</div>
+        <div>
+          <div class="about-title">What is Etterkontroll (E)?</div>
+          <div class="about-body">Etterkontroll is a re-inspection after a vehicle has previously failed. These vehicles have already had repairs done, so they pass at a much higher rate than standard Periodisk (P) inspections. Selecting Etterkontroll in the predictor will significantly increase the predicted pass probability — this is real and expected.</div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <div class="about-icon">*</div>
+        <div>
+          <div class="about-title">Important limitations</div>
+          <div class="about-body">The model predicts for a <em>type</em> of vehicle — not a specific car. It does not know about individual service history, recent repairs, recalls, or software updates. Predictions for vehicles with very few examples in the data (rare brands, unusual fuel types) carry wider uncertainty. Do not use these predictions as a substitute for an actual mechanical inspection.</div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <div class="about-icon">D</div>
+        <div>
+          <div class="about-title">Data source & methodology</div>
+          <div class="about-body">Data: Statens vegvesen — Periodisk Kjøretøykontroll (PKK), published quarterly on GitHub under CC BY 4.0. Model: logistic regression trained on ~480,000 inspection records. Confidence intervals: bootstrap resampling (8 resamples). Retrains automatically every night at 03:00 UTC via GitHub Actions. <a href="https://github.com/tomvanaylward-cmyk/pkk-dashboard" target="_blank" style="color:var(--accent)">View source code →</a></div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- end page-about -->
+
+  </div><!-- end app -->
 </main>
 <footer>
   Data: <a href="https://github.com/vegvesen/periodisk-kjoretoy-kontroll" target="_blank">Statens vegvesen / periodisk-kjoretoy-kontroll</a> &nbsp;·&nbsp;
@@ -214,6 +323,13 @@ footer a{color:var(--muted)}
 let COEF = null;
 let ageChartInst = null;
 let defectChartInst = null;
+
+function showPage(page) {
+  document.getElementById('page-predictor').style.display = page==='predictor' ? '' : 'none';
+  document.getElementById('page-about').style.display     = page==='about'     ? '' : 'none';
+  document.getElementById('nav-predictor').classList.toggle('active', page==='predictor');
+  document.getElementById('nav-about').classList.toggle('active',     page==='about');
+}
 
 async function init() {
   try {
