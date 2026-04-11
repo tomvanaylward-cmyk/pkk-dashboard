@@ -337,6 +337,13 @@ def failure_fingerprint(feat_df, raw_df):
             continue
 
         baseline = round(float(y_chap.mean()), 4)
+
+        # Skip chapters with very low national fault rate — not enough signal
+        # and balanced weighting makes predictions nonsensical for rare events
+        if baseline < 0.02:
+            print(f"  Skipping {name} — baseline too low ({baseline:.3f}), not enough signal")
+            continue
+
         print(f"  Training {name}: baseline={baseline:.3f}, positives={y_chap.sum()}")
 
         X = feat_df.drop(columns=["approved"])
@@ -350,10 +357,11 @@ def failure_fingerprint(feat_df, raw_df):
             ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), cat_features),
             ("num", StandardScaler(), num_features),
         ])
+        # No class_weight="balanced" here — we want realistic probability estimates
+        # anchored to the actual fault rate, not artificially centred at 50%
         m = Pipeline([
             ("pre", pre),
-            ("clf", LogisticRegression(max_iter=300, C=1.0,
-                                       class_weight="balanced", solver="saga"))
+            ("clf", LogisticRegression(max_iter=300, C=1.0, solver="saga"))
         ])
         m.fit(X, y_chap)
 
