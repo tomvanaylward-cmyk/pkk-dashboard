@@ -293,6 +293,105 @@ def extract_coefficients(model, feat_df, auc, stds, names):
         "pass_rate":       round(float(feat_df["approved"].mean()), 4),
     }
 
+def failure_fingerprint(feat_df, raw_df):
+    """
+    Train 11 logistic regressions, one per defect chapter.
+    For each chapter, output:
+    - national baseline fault rate
+    - coefficients for brand, fuel, age, km
+    So the frontend can predict per-vehicle chapter risk.
+    """
+    CAP_COLS = {
+        "Ant 2-3er kap 0":  "Identification & documents",
+        "Ant 2-3er kap 1":  "Brakes",
+        "Ant 2-3er kap 2":  "Steering",
+        "Ant 2-3er kap 3":  "Visibility",
+        "Ant 2-3er kap 4":  "Lights & electrical",
+        "Ant 2-3er kap 5":  "Axles, wheels & tyres",
+        "Ant 2-3er kap 6":  "Chassis & body",
+        "Ant 2-3er kap 7":  "Other equipment",
+        "Ant 2-3er kap 8":  "Noise & emissions",
+        "Ant 2-3er kap 9":  "Checks during drive",
+        "Ant 2-3er kap 10": "Environment",
+    }
+
+    cat_features = ["brand", "fuel", "ctrl_type", "weight"]
+    num_features = ["km", "age", "insp_num"]
+
+    # align raw_df index with feat_df
+    raw_aligned = raw_df.iloc[:len(feat_df)].copy()
+    raw_aligned.index = feat_df.index
+
+    fingerprint = {}
+    for col, name in CAP_COLS.items():
+        if col not in raw_aligned.columns:
+            print(f"  Skipping {name} — column not found")
+            continue
+
+        # binary target: did this inspection have at least one fault in this chapter?
+        y_chap = (pd.to_numeric(raw_aligned[col], errors="coerce")
+                    .fillna(0).reindex(feat_df.index).fillna(0) > 0).astype(int)
+
+        if y_chap.sum() < 50:
+            print(f"  Skipping {name} — too few positives ({y_chap.sum()})")
+            continue
+
+        baseline = round(float(y_chap.mean()), 4)
+        print(f"  Training {name}: baseline={baseline:.3f}, positives={y_chap.sum()}")
+
+        X = feat_df.drop(columns=["approved"])
+
+        from sklearn.compose import ColumnTransformer
+        from sklearn.preprocessing import OneHotEncoder, StandardScaler
+        from sklearn.pipeline import Pipeline
+        from sklearn.linear_model import LogisticRegression
+
+        pre = ColumnTransformer([
+            ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), cat_features),
+            ("num", StandardScaler(), num_features),
+        ])
+        m = Pipeline([
+            ("pre", pre),
+            ("clf", LogisticRegression(max_iter=300, C=1.0,
+                                       class_weight="balanced", solver="saga"))
+        ])
+        m.fit(X, y_chap)
+
+        feat_names = list(m.named_steps["pre"].get_feature_names_out())
+        coefs      = m.named_steps["clf"].coef_[0]
+        coef_map   = dict(zip(feat_names, coefs))
+        sc         = m.named_steps["pre"].named_transformers_["num"]
+
+        def g(prefix):
+            return {
+                k[len(prefix):]: round(float(v), 4)
+                for k, v in coef_map.items() if k.startswith(prefix)
+            }
+
+        fingerprint[name] = {
+            "baseline":   baseline,
+            "intercept":  round(float(m.named_steps["clf"].intercept_[0]), 4),
+            "brand":      g("cat__brand_"),
+            "fuel":       g("cat__fuel_"),
+            "ctrl_type":  g("cat__ctrl_type_"),
+            "numeric": {
+                "km_scaled":   round(float(coef_map.get("num__km",      0)), 6),
+                "age_scaled":  round(float(coef_map.get("num__age",     0)), 6),
+                "insp_scaled": round(float(coef_map.get("num__insp_num",0)), 6),
+            },
+            "scaler": {
+                "km_mean":   round(float(sc.mean_[0]),  2),
+                "km_std":    round(float(sc.scale_[0]), 2),
+                "age_mean":  round(float(sc.mean_[1]),  2),
+                "age_std":   round(float(sc.scale_[1]), 2),
+                "insp_mean": round(float(sc.mean_[2]),  2),
+                "insp_std":  round(float(sc.scale_[2]), 2),
+            },
+        }
+
+    return fingerprint
+
+
 def defect_analysis(raw_df):
     CAP_NAMES = {
         "Ant 2-3er kap 0":  "Identification & documents",
@@ -360,7 +459,9 @@ def main():
     model, auc, X = train_model(feat_df)
     stds, names   = bootstrap_ci(feat_df, n_boot=8)
     coefs         = extract_coefficients(model, feat_df, auc, stds, names)
-    coefs["defects"] = defect_analysis(raw)
+    print("\n=== Failure fingerprint (11 chapter models) ===")
+    coefs["fingerprint"] = failure_fingerprint(feat_df, raw)
+    coefs["defects"]     = defect_analysis(raw)
 
     with open("docs/coefficients.json", "w") as f:
         json.dump(coefs, f, indent=2, ensure_ascii=False)
@@ -369,6 +470,7 @@ def main():
     d = coefs["defects"]
     print(f"Top defect: {d['chapters'][0]['name']} ({d['chapters'][0]['rate_all']*100:.1f}% of all inspections)")
     print(f"Brand→fuel mappings: {len(coefs['brand_fuel'])} brands")
+    print(f"Fingerprint chapters trained: {len(coefs['fingerprint'])}/11")
 
 if __name__ == "__main__":
     main()
