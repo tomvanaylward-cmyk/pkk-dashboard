@@ -188,6 +188,15 @@ footer a{color:var(--muted)}
       <div id="riskPanelB"></div>
     </div>
 
+    <!-- Failure fingerprint -->
+    <div class="card">
+      <div class="card-title">Failure fingerprint — predicted fault probability per chapter</div>
+      <div style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:14px">
+        Based on 11 separate models trained on real PKK data. Shows the probability this vehicle profile has at least one fault per chapter vs the national average. Each chapter is an independent logistic regression.
+      </div>
+      <div id="fingerprintSection"></div>
+    </div>
+
     <div class="card">
       <div class="card-title">Comparison</div>
       <div class="diff-text" id="diffText">—</div>
@@ -199,11 +208,6 @@ footer a{color:var(--muted)}
       <div class="card-title">Marginal effects — pass probability difference vs. baseline</div>
       <div style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:12px">How much each category raises or lowers pass probability. Bars show 95% CI.</div>
       <div id="coefSections"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Defect chapter importance (XGBoost)</div>
-      <div style="position:relative;height:260px"><canvas id="defectChart"></canvas></div>
     </div>
 
     <div class="card">
@@ -648,6 +652,85 @@ function renderResult(s, p, vals) {
   vEl.textContent = v.text; vEl.style.background = v.bg; vEl.style.color = v.col;
 }
 
+function predictChapter(chapterName, brand, fuel, age, km, inspN) {
+  const fp = (COEF.fingerprint || {})[chapterName];
+  if (!fp) return null;
+  const bc = (fp.brand || {})[brand] || 0;
+  const fc = (fp.fuel  || {})[fuel]  || 0;
+  const ct = (fp.ctrl_type || {})['P'] || 0;
+  const sc = fp.scaler || {km_mean:174496,km_std:93517,age_mean:12.72,age_std:5.92,insp_mean:3,insp_std:2};
+  const nc = fp.numeric || {};
+  const kmS   = (km*1000 - sc.km_mean)   / sc.km_std;
+  const ageS  = (age      - sc.age_mean)  / sc.age_std;
+  const inspS = (inspN    - (sc.insp_mean||3)) / (sc.insp_std||2);
+  const z = fp.intercept + bc + fc + ct +
+            (nc.km_scaled||0)*kmS + (nc.age_scaled||0)*ageS + (nc.insp_scaled||0)*inspS;
+  return 1 / (1 + Math.exp(-z));
+}
+
+function renderFingerprint(A, B) {
+  const fp = COEF.fingerprint;
+  if (!fp || Object.keys(fp).length === 0) {
+    document.getElementById('fingerprintSection').innerHTML =
+      '<div style="font-size:12px;color:var(--muted);font-family:var(--mono)">Fingerprint data not yet available — run the workflow to generate it.</div>';
+    return;
+  }
+  const chapters = Object.keys(fp);
+  const inspA = inspNum(A.age), inspB = inspNum(B.age);
+
+  const rows = chapters.map(name => {
+    const probA    = predictChapter(name, A.brand, A.fuel, A.age, A.km, inspA);
+    const probB    = predictChapter(name, B.brand, B.fuel, B.age, B.km, inspB);
+    const baseline = fp[name].baseline;
+    return { name, probA, probB, baseline };
+  }).sort((a,b) => Math.max(b.probA,b.probB) - Math.max(a.probA,a.probB));
+
+  const lA = document.getElementById('brandA').options[document.getElementById('brandA').selectedIndex].text;
+  const lB = document.getElementById('brandB').options[document.getElementById('brandB').selectedIndex].text;
+  const maxVal = Math.max(...rows.map(r => Math.max(r.probA||0, r.probB||0, r.baseline||0)), 0.01);
+
+  const colA = '#c84b2f', colB = '#2d7a3a', colBase = '#aaa';
+
+  let html = `
+    <div style="display:flex;gap:16px;font-size:11px;font-family:var(--mono);margin-bottom:14px;align-items:center">
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:3px;background:${colA};display:inline-block;border-radius:2px"></span>${lA}</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:3px;background:${colB};display:inline-block;border-radius:2px"></span>${lB}</span>
+      <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:3px;background:${colBase};display:inline-block;border-radius:2px;opacity:.6"></span>National avg</span>
+    </div>`;
+
+  rows.forEach(({name, probA, probB, baseline}) => {
+    if (probA === null && probB === null) return;
+    const pA = probA ?? 0, pB = probB ?? 0;
+    const wA = ((pA/maxVal)*100).toFixed(1);
+    const wB = ((pB/maxVal)*100).toFixed(1);
+    const wBase = ((baseline/maxVal)*100).toFixed(1);
+    const flagA = pA > baseline * 1.3 ? '⚠' : '';
+    const flagB = pB > baseline * 1.3 ? '⚠' : '';
+    html += `
+      <div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+          <span style="font-weight:500;color:var(--text)">${name}</span>
+          <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">
+            ${flagA}<span style="color:${colA}">${(pA*100).toFixed(1)}%</span>
+            &nbsp;/&nbsp;
+            ${flagB}<span style="color:${colB}">${(pB*100).toFixed(1)}%</span>
+            &nbsp;(avg ${(baseline*100).toFixed(1)}%)
+          </span>
+        </div>
+        <div style="position:relative;height:7px;background:var(--bg);border-radius:4px;overflow:visible;margin-bottom:3px">
+          <div style="position:absolute;height:100%;width:${wA}%;background:${colA};border-radius:4px;opacity:0.8"></div>
+        </div>
+        <div style="position:relative;height:7px;background:var(--bg);border-radius:4px;overflow:visible">
+          <div style="position:absolute;height:100%;width:${wB}%;background:${colB};border-radius:4px;opacity:0.8"></div>
+          <div style="position:absolute;height:130%;top:-15%;width:2px;background:${colBase};left:${wBase}%;opacity:0.7;border-radius:1px"></div>
+        </div>
+      </div>`;
+  });
+
+  html += `<div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:8px">⚠ = more than 30% above national average for this chapter. Vertical line = national average.</div>`;
+  document.getElementById('fingerprintSection').innerHTML = html;
+}
+
 function update() {
   const A = getVals('A'), B = getVals('B');
   const pA = predict(A.brand, A.fuel, A.age, A.km, A.ctrlType);
@@ -656,6 +739,7 @@ function update() {
   renderResult('B', pB, B);
   renderRiskPanel('A', A.brand, A.fuel, A.age, A.km, A.ctrlType, pA);
   renderRiskPanel('B', B.brand, B.fuel, B.age, B.km, B.ctrlType, pB);
+  renderFingerprint(A, B);
 
   const diff = (pB.mid - pA.mid)*100;
   const lA = document.getElementById('brandA').options[document.getElementById('brandA').selectedIndex].text;
