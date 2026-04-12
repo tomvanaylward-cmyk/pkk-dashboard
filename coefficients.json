@@ -1,6 +1,6 @@
 {
   "meta": {
-    "trained_at": "2026-04-11T20:50:10.918589+00:00",
+    "trained_at": "2026-04-12T06:29:50.168781+00:00",
     "n_samples": 478706,
     "auc_roc": 0.836,
     "pass_rate": 0.6515,
@@ -10,299 +10,299 @@
   "brand": {
     "ALFA ROMEO": {
       "coef": -0.3548,
-      "lo": -0.6176,
-      "hi": -0.0921
+      "lo": -0.6203,
+      "hi": -0.0893
     },
     "AUDI": {
       "coef": 0.6169,
-      "lo": 0.5738,
-      "hi": 0.6599
+      "lo": 0.5905,
+      "hi": 0.6432
     },
     "BMW": {
       "coef": 0.4233,
-      "lo": 0.3758,
-      "hi": 0.4707
+      "lo": 0.3874,
+      "hi": 0.4592
     },
     "BMW I": {
       "coef": -0.1557,
-      "lo": -0.2533,
-      "hi": -0.0581
+      "lo": -0.203,
+      "hi": -0.1084
     },
     "BURSTNER": {
       "coef": 0.0365,
-      "lo": -0.1021,
-      "hi": 0.1751
+      "lo": -0.1086,
+      "hi": 0.1816
     },
     "CHEVROLET": {
       "coef": -0.0541,
-      "lo": -0.1692,
-      "hi": 0.061
+      "lo": -0.1894,
+      "hi": 0.0813
     },
     "CITROEN": {
       "coef": -0.3041,
-      "lo": -0.3411,
-      "hi": -0.2672
+      "lo": -0.3613,
+      "hi": -0.247
     },
     "DANGEL": {
       "coef": -0.4209,
-      "lo": -0.5228,
-      "hi": -0.319
+      "lo": -0.5212,
+      "hi": -0.3206
     },
     "EKERI": {
       "coef": -0.1588,
-      "lo": -0.3222,
-      "hi": 0.0045
+      "lo": -0.317,
+      "hi": -0.0007
     },
     "FIAT": {
       "coef": -0.6218,
-      "lo": -0.7133,
-      "hi": -0.5302
+      "lo": -0.7069,
+      "hi": -0.5367
     },
     "FORD": {
       "coef": 0.1977,
-      "lo": 0.1713,
-      "hi": 0.224
+      "lo": 0.1672,
+      "hi": 0.2281
     },
     "HFR": {
       "coef": -0.721,
-      "lo": -0.9136,
-      "hi": -0.5283
+      "lo": -0.9362,
+      "hi": -0.5057
     },
     "HONDA": {
       "coef": 0.4159,
-      "lo": 0.3165,
-      "hi": 0.5153
+      "lo": 0.3683,
+      "hi": 0.4635
     },
     "HYMER": {
       "coef": 0.1599,
-      "lo": -0.0415,
-      "hi": 0.3613
+      "lo": -0.0236,
+      "hi": 0.3434
     },
     "HYUNDAI": {
       "coef": 0.2776,
-      "lo": 0.2318,
-      "hi": 0.3233
+      "lo": 0.2335,
+      "hi": 0.3216
     },
     "ISTRAIL": {
       "coef": -0.4734,
-      "lo": -0.6277,
-      "hi": -0.3192
+      "lo": -0.6593,
+      "hi": -0.2875
     },
     "ISUZU": {
       "coef": -0.0501,
-      "lo": -0.1807,
-      "hi": 0.0805
+      "lo": -0.1257,
+      "hi": 0.0256
     },
     "IVECO": {
       "coef": -0.6509,
-      "lo": -0.7993,
-      "hi": -0.5025
+      "lo": -0.791,
+      "hi": -0.5108
     },
     "JAGUAR": {
       "coef": 0.4663,
-      "lo": 0.3713,
-      "hi": 0.5613
+      "lo": 0.28,
+      "hi": 0.6525
     },
     "JEEP": {
       "coef": 0.253,
-      "lo": 0.1098,
-      "hi": 0.3963
+      "lo": 0.0246,
+      "hi": 0.4814
     },
     "KIA": {
       "coef": 0.1953,
-      "lo": 0.1632,
-      "hi": 0.2274
+      "lo": 0.1507,
+      "hi": 0.24
     },
     "KRONE": {
       "coef": -0.2609,
-      "lo": -0.5148,
-      "hi": -0.0069
+      "lo": -0.4771,
+      "hi": -0.0446
     },
     "LAND ROVER": {
       "coef": 0.5159,
-      "lo": 0.4211,
-      "hi": 0.6108
+      "lo": 0.3888,
+      "hi": 0.6431
     },
     "LEXUS": {
       "coef": 0.8732,
-      "lo": 0.7146,
-      "hi": 1.0317
+      "lo": 0.7513,
+      "hi": 0.9951
     },
     "MAN": {
       "coef": -0.7519,
-      "lo": -0.8665,
-      "hi": -0.6372
+      "lo": -0.8797,
+      "hi": -0.624
     },
     "MAUR BILPÅBYGG": {
       "coef": -0.2778,
-      "lo": -0.4324,
-      "hi": -0.1231
+      "lo": -0.4008,
+      "hi": -0.1548
     },
     "MAZDA": {
       "coef": 0.4315,
-      "lo": 0.3659,
-      "hi": 0.4971
+      "lo": 0.3793,
+      "hi": 0.4836
     },
     "MERCEDES-BENZ": {
       "coef": 0.1964,
-      "lo": 0.1651,
-      "hi": 0.2276
+      "lo": 0.1672,
+      "hi": 0.2255
     },
     "MG": {
       "coef": -0.5735,
-      "lo": -0.6842,
-      "hi": -0.4628
+      "lo": -0.7073,
+      "hi": -0.4397
     },
     "MINI": {
       "coef": 0.4195,
-      "lo": 0.3406,
-      "hi": 0.4985
+      "lo": 0.333,
+      "hi": 0.506
     },
     "MITSUBISHI": {
       "coef": 0.2589,
-      "lo": 0.1954,
-      "hi": 0.3223
+      "lo": 0.2266,
+      "hi": 0.2912
     },
     "NISSAN": {
       "coef": -0.2847,
-      "lo": -0.3348,
-      "hi": -0.2347
+      "lo": -0.3164,
+      "hi": -0.2531
     },
     "NOR SLEP": {
       "coef": -0.4207,
-      "lo": -0.5715,
-      "hi": -0.2699
+      "lo": -0.5278,
+      "hi": -0.3136
     },
     "OPEL": {
       "coef": 0.0622,
-      "lo": 0.0259,
-      "hi": 0.0984
+      "lo": -0.0054,
+      "hi": 0.1297
     },
     "OTHER": {
       "coef": -0.5642,
-      "lo": -0.5897,
-      "hi": -0.5386
+      "lo": -0.6172,
+      "hi": -0.5112
     },
     "PEUGEOT": {
       "coef": -0.097,
-      "lo": -0.1232,
-      "hi": -0.0708
+      "lo": -0.1537,
+      "hi": -0.0403
     },
     "POLESTAR": {
       "coef": 0.5234,
-      "lo": 0.413,
-      "hi": 0.6337
+      "lo": 0.4553,
+      "hi": 0.5914
     },
     "PORSCHE": {
       "coef": 0.6727,
-      "lo": 0.5428,
-      "hi": 0.8026
+      "lo": 0.5491,
+      "hi": 0.7962
     },
     "RENAULT": {
       "coef": -0.5952,
-      "lo": -0.6748,
-      "hi": -0.5156
+      "lo": -0.6561,
+      "hi": -0.5342
     },
     "SAAB": {
       "coef": 0.3447,
-      "lo": 0.161,
-      "hi": 0.5285
+      "lo": 0.2679,
+      "hi": 0.4215
     },
     "SCANIA": {
       "coef": -0.441,
-      "lo": -0.5139,
-      "hi": -0.368
+      "lo": -0.5198,
+      "hi": -0.3621
     },
     "SCHMITZ CARGOBULL": {
       "coef": -0.0874,
-      "lo": -0.2231,
-      "hi": 0.0483
+      "lo": -0.2933,
+      "hi": 0.1185
     },
     "SKODA": {
       "coef": 0.4464,
-      "lo": 0.3992,
-      "hi": 0.4935
+      "lo": 0.4,
+      "hi": 0.4927
     },
     "SSANGYONG": {
       "coef": -0.5304,
-      "lo": -0.7915,
-      "hi": -0.2693
+      "lo": -0.8088,
+      "hi": -0.252
     },
     "SUBARU": {
       "coef": 0.4014,
-      "lo": 0.3445,
-      "hi": 0.4582
+      "lo": 0.3286,
+      "hi": 0.4741
     },
     "SUZUKI": {
       "coef": 0.4085,
-      "lo": 0.3651,
-      "hi": 0.4518
+      "lo": 0.3399,
+      "hi": 0.4771
     },
     "TESLA": {
       "coef": -0.623,
-      "lo": -0.7142,
-      "hi": -0.5317
+      "lo": -0.6557,
+      "hi": -0.5902
     },
     "TESLA MOTORS": {
       "coef": -0.4831,
-      "lo": -0.5591,
-      "hi": -0.4071
+      "lo": -0.5343,
+      "hi": -0.4318
     },
     "TOYOTA": {
       "coef": 0.4375,
-      "lo": 0.4164,
-      "hi": 0.4586
+      "lo": 0.4005,
+      "hi": 0.4745
     },
     "VOLKSWAGEN": {
       "coef": 0.3469,
-      "lo": 0.3217,
-      "hi": 0.3721
+      "lo": 0.3151,
+      "hi": 0.3787
     },
     "VOLVO": {
       "coef": 0.5848,
-      "lo": 0.5653,
-      "hi": 0.6043
+      "lo": 0.5573,
+      "hi": 0.6123
     }
   },
   "fuel": {
     "BEV": {
       "coef": 0.5014,
-      "lo": 0.4814,
-      "hi": 0.5213
+      "lo": 0.4732,
+      "hi": 0.5295
     },
     "Diesel": {
       "coef": 0.1722,
-      "lo": 0.1492,
-      "hi": 0.1951
+      "lo": 0.1464,
+      "hi": 0.1979
     },
     "Other": {
       "coef": -1.0302,
-      "lo": -1.08,
-      "hi": -0.9803
+      "lo": -1.1058,
+      "hi": -0.9545
     },
     "Petrol": {
       "coef": 0.3664,
-      "lo": 0.3398,
-      "hi": 0.393
+      "lo": 0.341,
+      "hi": 0.3918
     }
   },
   "ctrl_type": {
     "E": {
       "coef": 1.7517,
-      "lo": 1.7381,
-      "hi": 1.7652
+      "lo": 1.736,
+      "hi": 1.7673
     },
     "P": {
       "coef": -1.7419,
-      "lo": -1.7554,
-      "hi": -1.7285
+      "lo": -1.7575,
+      "hi": -1.7263
     }
   },
   "weight": {
     "Lette": {
       "coef": 0.0097,
       "lo": 0.0096,
-      "hi": 0.0099
+      "hi": 0.0098
     }
   },
   "numeric": {
@@ -593,9 +593,9 @@
   "fingerprint": {
     "Brakes": {
       "baseline": 0.1872,
-      "intercept": -1.4814,
+      "intercept": -1.4834,
       "brand": {
-        "ALFA ROMEO": -0.0086,
+        "ALFA ROMEO": -0.0085,
         "AUDI": -0.0195,
         "BMW": -0.0101,
         "BMW I": -0.0124,
@@ -604,24 +604,24 @@
         "CITROEN": 0.0155,
         "DANGEL": 0.1385,
         "EKERI": -0.1325,
-        "FIAT": -0.001,
+        "FIAT": -0.0009,
         "FORD": 0.0168,
-        "HFR": -0.1177,
-        "HONDA": -0.0363,
-        "HYMER": 0.1784,
+        "HFR": -0.1176,
+        "HONDA": -0.0362,
+        "HYMER": 0.1785,
         "HYUNDAI": 0.02,
         "ISTRAIL": 0.0539,
         "ISUZU": 0.0544,
         "IVECO": -0.1789,
         "JAGUAR": 0.0695,
         "JEEP": -0.0225,
-        "KIA": 0.0063,
+        "KIA": 0.0064,
         "KRONE": 0.027,
-        "LAND ROVER": -0.05,
+        "LAND ROVER": -0.0499,
         "LEXUS": -0.0091,
-        "MAN": -0.0958,
+        "MAN": -0.0957,
         "MAUR BILPÅBYGG": 0.1107,
-        "MAZDA": -0.0029,
+        "MAZDA": -0.0028,
         "MERCEDES-BENZ": -0.0112,
         "MG": 0.0329,
         "MINI": -0.0491,
@@ -636,7 +636,7 @@
         "RENAULT": 0.0746,
         "SAAB": 0.0293,
         "SCANIA": -0.0147,
-        "SCHMITZ CARGOBULL": -0.1042,
+        "SCHMITZ CARGOBULL": -0.1041,
         "SKODA": 0.0016,
         "SSANGYONG": -0.2647,
         "SUBARU": 0.0191,
@@ -645,17 +645,17 @@
         "TESLA MOTORS": 0.0235,
         "TOYOTA": 0.0261,
         "VOLKSWAGEN": 0.0193,
-        "VOLVO": 0.0183
+        "VOLVO": 0.0184
       },
       "fuel": {
-        "BEV": -0.0073,
-        "Diesel": 0.0126,
-        "Other": -0.024,
-        "Petrol": 0.0162
+        "BEV": -0.007,
+        "Diesel": 0.0128,
+        "Other": -0.0238,
+        "Petrol": 0.0165
       },
       "ctrl_type": {
-        "E": 0.0038,
-        "P": -0.0063
+        "E": 0.0043,
+        "P": -0.0058
       },
       "numeric": {
         "km_scaled": -0.000524,
@@ -673,73 +673,73 @@
     },
     "Steering": {
       "baseline": 0.0357,
-      "intercept": -3.2806,
+      "intercept": -3.2869,
       "brand": {
-        "ALFA ROMEO": 0.1334,
-        "AUDI": -0.021,
+        "ALFA ROMEO": 0.1335,
+        "AUDI": -0.0209,
         "BMW": 0.0496,
         "BMW I": 0.0655,
-        "BURSTNER": -0.3059,
+        "BURSTNER": -0.3058,
         "CHEVROLET": 0.2972,
-        "CITROEN": 0.0036,
+        "CITROEN": 0.0037,
         "DANGEL": 0.1362,
-        "EKERI": 0.016,
-        "FIAT": -0.1068,
-        "FORD": 0.0355,
-        "HFR": -0.3885,
-        "HONDA": -0.02,
-        "HYMER": -0.1343,
-        "HYUNDAI": 0.1696,
-        "ISTRAIL": -0.3537,
-        "ISUZU": -0.0558,
-        "IVECO": -0.037,
+        "EKERI": 0.0161,
+        "FIAT": -0.1067,
+        "FORD": 0.0356,
+        "HFR": -0.3884,
+        "HONDA": -0.0199,
+        "HYMER": -0.1342,
+        "HYUNDAI": 0.1697,
+        "ISTRAIL": -0.3536,
+        "ISUZU": -0.0557,
+        "IVECO": -0.0369,
         "JAGUAR": 0.1666,
-        "JEEP": -0.0914,
-        "KIA": 0.0025,
-        "KRONE": -0.205,
-        "LAND ROVER": 0.0779,
-        "LEXUS": 0.0357,
+        "JEEP": -0.0913,
+        "KIA": 0.0026,
+        "KRONE": -0.2049,
+        "LAND ROVER": 0.078,
+        "LEXUS": 0.0358,
         "MAN": -0.0937,
-        "MAUR BILPÅBYGG": 0.0958,
-        "MAZDA": 0.0626,
-        "MERCEDES-BENZ": -0.0184,
-        "MG": 0.0262,
-        "MINI": 0.1597,
+        "MAUR BILPÅBYGG": 0.0959,
+        "MAZDA": 0.0627,
+        "MERCEDES-BENZ": -0.0183,
+        "MG": 0.0263,
+        "MINI": 0.1598,
         "MITSUBISHI": -0.0324,
-        "NISSAN": 0.0024,
-        "NOR SLEP": 0.1032,
+        "NISSAN": 0.0025,
+        "NOR SLEP": 0.1033,
         "OPEL": 0.0329,
-        "OTHER": 0.0192,
-        "PEUGEOT": 0.0044,
-        "POLESTAR": 0.1037,
-        "PORSCHE": -0.0682,
-        "RENAULT": -0.0425,
-        "SAAB": -0.0523,
+        "OTHER": 0.0193,
+        "PEUGEOT": 0.0045,
+        "POLESTAR": 0.1038,
+        "PORSCHE": -0.0681,
+        "RENAULT": -0.0424,
+        "SAAB": -0.0522,
         "SCANIA": -0.0006,
-        "SCHMITZ CARGOBULL": 0.0321,
-        "SKODA": 0.0644,
+        "SCHMITZ CARGOBULL": 0.0322,
+        "SKODA": 0.0645,
         "SSANGYONG": 0.0623,
         "SUBARU": 0.0478,
-        "SUZUKI": -0.0288,
-        "TESLA": 0.0464,
+        "SUZUKI": -0.0287,
+        "TESLA": 0.0465,
         "TESLA MOTORS": 0.0147,
         "TOYOTA": -0.0151,
-        "VOLKSWAGEN": -0.0241,
-        "VOLVO": 0.0224
+        "VOLKSWAGEN": -0.024,
+        "VOLVO": 0.0225
       },
       "fuel": {
-        "BEV": -0.0413,
-        "Diesel": -0.0261,
-        "Other": 0.0616,
-        "Petrol": 0.0
+        "BEV": -0.0404,
+        "Diesel": -0.0252,
+        "Other": 0.0624,
+        "Petrol": 0.0009
       },
       "ctrl_type": {
-        "E": -0.0138,
-        "P": 0.0081
+        "E": -0.012,
+        "P": 0.0099
       },
       "numeric": {
         "km_scaled": 0.007678,
-        "age_scaled": -0.012458,
+        "age_scaled": -0.012459,
         "insp_scaled": 0.017679
       },
       "scaler": {
@@ -753,74 +753,74 @@
     },
     "Visibility": {
       "baseline": 0.0284,
-      "intercept": -3.5811,
+      "intercept": -3.5862,
       "brand": {
         "ALFA ROMEO": -0.0715,
-        "AUDI": 0.0261,
+        "AUDI": 0.0262,
         "BMW": 0.0492,
         "BMW I": -0.0784,
         "BURSTNER": -0.3247,
-        "CHEVROLET": 0.0042,
-        "CITROEN": 0.0636,
+        "CHEVROLET": 0.0043,
+        "CITROEN": 0.0637,
         "DANGEL": 0.0658,
-        "EKERI": -0.2808,
+        "EKERI": -0.2807,
         "FIAT": -0.0291,
-        "FORD": 0.1058,
-        "HFR": -0.1191,
-        "HONDA": 0.0116,
-        "HYMER": 0.1104,
-        "HYUNDAI": -0.0103,
-        "ISTRAIL": -0.1753,
-        "ISUZU": 0.0158,
-        "IVECO": 0.0032,
-        "JAGUAR": -0.0708,
+        "FORD": 0.1059,
+        "HFR": -0.119,
+        "HONDA": 0.0117,
+        "HYMER": 0.1105,
+        "HYUNDAI": -0.0102,
+        "ISTRAIL": -0.1752,
+        "ISUZU": 0.0159,
+        "IVECO": 0.0033,
+        "JAGUAR": -0.0707,
         "JEEP": -0.0079,
         "KIA": 0.0659,
-        "KRONE": 0.1351,
+        "KRONE": 0.1352,
         "LAND ROVER": 0.0203,
-        "LEXUS": -0.0193,
+        "LEXUS": -0.0192,
         "MAN": 0.0453,
-        "MAUR BILPÅBYGG": -0.256,
-        "MAZDA": -0.017,
-        "MERCEDES-BENZ": -0.0015,
-        "MG": 0.0469,
+        "MAUR BILPÅBYGG": -0.2559,
+        "MAZDA": -0.0169,
+        "MERCEDES-BENZ": -0.0014,
+        "MG": 0.047,
         "MINI": 0.1462,
         "MITSUBISHI": 0.0905,
-        "NISSAN": 0.0661,
-        "NOR SLEP": 0.1932,
-        "OPEL": 0.1221,
+        "NISSAN": 0.0662,
+        "NOR SLEP": 0.1933,
+        "OPEL": 0.1222,
         "OTHER": 0.0214,
-        "PEUGEOT": 0.0282,
+        "PEUGEOT": 0.0283,
         "POLESTAR": 0.1313,
         "PORSCHE": -0.6045,
         "RENAULT": 0.0198,
-        "SAAB": -0.2769,
-        "SCANIA": -0.1333,
+        "SAAB": -0.2768,
+        "SCANIA": -0.1332,
         "SCHMITZ CARGOBULL": 0.1679,
         "SKODA": 0.0635,
-        "SSANGYONG": 0.196,
-        "SUBARU": 0.0971,
-        "SUZUKI": 0.0184,
-        "TESLA": 0.0863,
-        "TESLA MOTORS": 0.0968,
-        "TOYOTA": 0.0234,
-        "VOLKSWAGEN": 0.0604,
-        "VOLVO": 0.0723
+        "SSANGYONG": 0.1961,
+        "SUBARU": 0.0972,
+        "SUZUKI": 0.0185,
+        "TESLA": 0.0864,
+        "TESLA MOTORS": 0.0969,
+        "TOYOTA": 0.0235,
+        "VOLKSWAGEN": 0.0605,
+        "VOLVO": 0.0724
       },
       "fuel": {
-        "BEV": -0.0131,
-        "Diesel": 0.0174,
-        "Other": -0.0303,
-        "Petrol": 0.0197
+        "BEV": -0.0124,
+        "Diesel": 0.0182,
+        "Other": -0.0296,
+        "Petrol": 0.0204
       },
       "ctrl_type": {
-        "E": -0.0101,
-        "P": 0.0039
+        "E": -0.0087,
+        "P": 0.0053
       },
       "numeric": {
         "km_scaled": 0.005771,
         "age_scaled": -0.063215,
-        "insp_scaled": 0.06658
+        "insp_scaled": 0.066581
       },
       "scaler": {
         "km_mean": 174189.79,
@@ -833,40 +833,40 @@
     },
     "Lights & electrical": {
       "baseline": 0.1757,
-      "intercept": -1.5718,
+      "intercept": -1.5746,
       "brand": {
         "ALFA ROMEO": -0.0673,
-        "AUDI": -0.0098,
-        "BMW": -0.0014,
-        "BMW I": 0.0154,
+        "AUDI": -0.0097,
+        "BMW": -0.0013,
+        "BMW I": 0.0155,
         "BURSTNER": -0.0781,
         "CHEVROLET": 0.1052,
         "CITROEN": 0.0437,
         "DANGEL": -0.0305,
         "EKERI": -0.2022,
         "FIAT": -0.0287,
-        "FORD": 0.0214,
-        "HFR": 0.0903,
+        "FORD": 0.0215,
+        "HFR": 0.0904,
         "HONDA": -0.0366,
         "HYMER": 0.0016,
         "HYUNDAI": 0.0168,
-        "ISTRAIL": 0.1357,
-        "ISUZU": 0.0576,
+        "ISTRAIL": 0.1358,
+        "ISUZU": 0.0577,
         "IVECO": -0.0404,
-        "JAGUAR": -0.0538,
+        "JAGUAR": -0.0537,
         "JEEP": 0.0919,
         "KIA": 0.0175,
         "KRONE": -0.0662,
         "LAND ROVER": -0.0422,
-        "LEXUS": -0.0158,
+        "LEXUS": -0.0157,
         "MAN": -0.0439,
-        "MAUR BILPÅBYGG": 0.1397,
-        "MAZDA": 0.0089,
+        "MAUR BILPÅBYGG": 0.1398,
+        "MAZDA": 0.009,
         "MERCEDES-BENZ": 0.0243,
-        "MG": -0.0155,
-        "MINI": -0.0301,
+        "MG": -0.0154,
+        "MINI": -0.03,
         "MITSUBISHI": -0.0281,
-        "NISSAN": 0.0072,
+        "NISSAN": 0.0073,
         "NOR SLEP": 0.2123,
         "OPEL": 0.0307,
         "OTHER": 0.0311,
@@ -878,24 +878,24 @@
         "SCANIA": 0.0386,
         "SCHMITZ CARGOBULL": -0.1692,
         "SKODA": -0.0094,
-        "SSANGYONG": -0.1271,
+        "SSANGYONG": -0.127,
         "SUBARU": 0.0175,
         "SUZUKI": 0.0228,
         "TESLA": -0.0359,
-        "TESLA MOTORS": -0.0536,
-        "TOYOTA": -0.0,
+        "TESLA MOTORS": -0.0535,
+        "TOYOTA": 0.0,
         "VOLKSWAGEN": 0.021,
-        "VOLVO": 0.0274
+        "VOLVO": 0.0275
       },
       "fuel": {
-        "BEV": 0.0099,
-        "Diesel": 0.0204,
-        "Other": -0.0606,
-        "Petrol": 0.0276
+        "BEV": 0.0103,
+        "Diesel": 0.0208,
+        "Other": -0.0602,
+        "Petrol": 0.028
       },
       "ctrl_type": {
-        "E": -0.0015,
-        "P": -0.0012
+        "E": -0.0007,
+        "P": -0.0004
       },
       "numeric": {
         "km_scaled": 0.000505,
@@ -913,48 +913,48 @@
     },
     "Axles, wheels & tyres": {
       "baseline": 0.1503,
-      "intercept": -1.7302,
+      "intercept": -1.7331,
       "brand": {
-        "ALFA ROMEO": -0.0638,
+        "ALFA ROMEO": -0.0637,
         "AUDI": 0.0196,
         "BMW": 0.0067,
         "BMW I": -0.0342,
-        "BURSTNER": -0.1555,
-        "CHEVROLET": 0.1216,
+        "BURSTNER": -0.1554,
+        "CHEVROLET": 0.1217,
         "CITROEN": -0.0339,
         "DANGEL": 0.1575,
         "EKERI": -0.0705,
         "FIAT": 0.0754,
-        "FORD": 0.0161,
+        "FORD": 0.0162,
         "HFR": -0.0627,
         "HONDA": -0.0322,
-        "HYMER": 0.1757,
+        "HYMER": 0.1758,
         "HYUNDAI": 0.0298,
         "ISTRAIL": 0.0416,
-        "ISUZU": 0.0093,
-        "IVECO": -0.0962,
+        "ISUZU": 0.0094,
+        "IVECO": -0.0961,
         "JAGUAR": 0.0288,
-        "JEEP": 0.1985,
+        "JEEP": 0.1986,
         "KIA": -0.0193,
         "KRONE": -0.0719,
         "LAND ROVER": -0.1108,
         "LEXUS": 0.0007,
         "MAN": 0.0401,
-        "MAUR BILPÅBYGG": 0.0293,
+        "MAUR BILPÅBYGG": 0.0294,
         "MAZDA": -0.0215,
         "MERCEDES-BENZ": 0.0236,
-        "MG": -0.0258,
+        "MG": -0.0257,
         "MINI": 0.0211,
-        "MITSUBISHI": 0.0004,
+        "MITSUBISHI": 0.0005,
         "NISSAN": 0.0304,
-        "NOR SLEP": 0.0158,
+        "NOR SLEP": 0.0159,
         "OPEL": 0.0362,
-        "OTHER": 0.0154,
-        "PEUGEOT": 0.0416,
-        "POLESTAR": -0.0532,
+        "OTHER": 0.0155,
+        "PEUGEOT": 0.0417,
+        "POLESTAR": -0.0531,
         "PORSCHE": -0.1553,
         "RENAULT": 0.1049,
-        "SAAB": 0.0699,
+        "SAAB": 0.07,
         "SCANIA": -0.0201,
         "SCHMITZ CARGOBULL": -0.2515,
         "SKODA": -0.0101,
@@ -965,17 +965,17 @@
         "TESLA MOTORS": 0.0246,
         "TOYOTA": 0.0133,
         "VOLKSWAGEN": 0.018,
-        "VOLVO": 0.0211
+        "VOLVO": 0.0212
       },
       "fuel": {
-        "BEV": -0.0317,
-        "Diesel": -0.0061,
-        "Other": 0.0494,
-        "Petrol": -0.0146
+        "BEV": -0.0313,
+        "Diesel": -0.0057,
+        "Other": 0.0498,
+        "Petrol": -0.0142
       },
       "ctrl_type": {
-        "E": -0.0012,
-        "P": -0.0019
+        "E": -0.0004,
+        "P": -0.001
       },
       "numeric": {
         "km_scaled": 0.007416,
@@ -993,74 +993,74 @@
     },
     "Chassis & body": {
       "baseline": 0.0715,
-      "intercept": -2.5683,
+      "intercept": -2.574,
       "brand": {
         "ALFA ROMEO": 0.0722,
-        "AUDI": -0.0204,
+        "AUDI": -0.0203,
         "BMW": 0.0383,
-        "BMW I": 0.0544,
-        "BURSTNER": 0.1148,
-        "CHEVROLET": 0.0808,
-        "CITROEN": 0.0012,
-        "DANGEL": -0.0845,
+        "BMW I": 0.0545,
+        "BURSTNER": 0.1149,
+        "CHEVROLET": 0.0809,
+        "CITROEN": 0.0013,
+        "DANGEL": -0.0844,
         "EKERI": -0.0845,
-        "FIAT": 0.0817,
-        "FORD": 0.0153,
-        "HFR": -0.0653,
-        "HONDA": 0.0372,
+        "FIAT": 0.0818,
+        "FORD": 0.0154,
+        "HFR": -0.0652,
+        "HONDA": 0.0373,
         "HYMER": -0.1162,
-        "HYUNDAI": 0.0444,
-        "ISTRAIL": 0.0418,
-        "ISUZU": 0.0899,
-        "IVECO": 0.027,
-        "JAGUAR": 0.1447,
+        "HYUNDAI": 0.0445,
+        "ISTRAIL": 0.0419,
+        "ISUZU": 0.09,
+        "IVECO": 0.0271,
+        "JAGUAR": 0.1448,
         "JEEP": 0.0271,
-        "KIA": 0.0002,
-        "KRONE": -0.1036,
+        "KIA": 0.0003,
+        "KRONE": -0.1035,
         "LAND ROVER": -0.1046,
-        "LEXUS": -0.0887,
-        "MAN": 0.0329,
+        "LEXUS": -0.0886,
+        "MAN": 0.033,
         "MAUR BILPÅBYGG": -0.0146,
-        "MAZDA": 0.018,
-        "MERCEDES-BENZ": 0.0092,
+        "MAZDA": 0.0181,
+        "MERCEDES-BENZ": 0.0093,
         "MG": -0.2285,
-        "MINI": -0.0387,
+        "MINI": -0.0386,
         "MITSUBISHI": -0.0235,
-        "NISSAN": 0.026,
+        "NISSAN": 0.0261,
         "NOR SLEP": 0.2124,
         "OPEL": 0.001,
-        "OTHER": -0.0111,
+        "OTHER": -0.011,
         "PEUGEOT": -0.0099,
         "POLESTAR": 0.1873,
-        "PORSCHE": -0.2274,
+        "PORSCHE": -0.2273,
         "RENAULT": 0.1194,
-        "SAAB": 0.1484,
-        "SCANIA": -0.0481,
+        "SAAB": 0.1485,
+        "SCANIA": -0.048,
         "SCHMITZ CARGOBULL": -0.1422,
-        "SKODA": 0.0488,
+        "SKODA": 0.0489,
         "SSANGYONG": -0.2331,
         "SUBARU": 0.0035,
-        "SUZUKI": -0.095,
-        "TESLA": 0.0302,
-        "TESLA MOTORS": 0.0006,
-        "TOYOTA": 0.0048,
-        "VOLKSWAGEN": 0.011,
-        "VOLVO": 0.0107
+        "SUZUKI": -0.0949,
+        "TESLA": 0.0303,
+        "TESLA MOTORS": 0.0007,
+        "TOYOTA": 0.0049,
+        "VOLKSWAGEN": 0.0111,
+        "VOLVO": 0.0108
       },
       "fuel": {
-        "BEV": -0.0088,
-        "Diesel": 0.0023,
-        "Other": -0.0059,
-        "Petrol": 0.0078
+        "BEV": -0.008,
+        "Diesel": 0.0031,
+        "Other": -0.0051,
+        "Petrol": 0.0086
       },
       "ctrl_type": {
-        "E": 0.0008,
-        "P": -0.0053
+        "E": 0.0024,
+        "P": -0.0037
       },
       "numeric": {
         "km_scaled": 0.006288,
         "age_scaled": -0.041941,
-        "insp_scaled": 0.040189
+        "insp_scaled": 0.04019
       },
       "scaler": {
         "km_mean": 174189.79,
@@ -1153,31 +1153,31 @@
     },
     "Noise & emissions": {
       "baseline": 0.0375,
-      "intercept": -3.2715,
+      "intercept": -3.2755,
       "brand": {
         "ALFA ROMEO": 0.1417,
         "AUDI": -0.0046,
         "BMW": -0.044,
-        "BMW I": -0.0042,
-        "BURSTNER": -0.1477,
-        "CHEVROLET": 0.0589,
+        "BMW I": -0.0041,
+        "BURSTNER": -0.1476,
+        "CHEVROLET": 0.059,
         "CITROEN": -0.0057,
         "DANGEL": 0.0828,
         "EKERI": -0.1961,
-        "FIAT": 0.0058,
-        "FORD": 0.0345,
-        "HFR": -0.128,
+        "FIAT": 0.0059,
+        "FORD": 0.0346,
+        "HFR": -0.1279,
         "HONDA": 0.0141,
         "HYMER": 0.0953,
         "HYUNDAI": 0.0475,
         "ISTRAIL": 0.1229,
         "ISUZU": 0.0951,
-        "IVECO": 0.1305,
+        "IVECO": 0.1306,
         "JAGUAR": -0.0703,
-        "JEEP": -0.1686,
-        "KIA": 0.0654,
-        "KRONE": 0.0032,
-        "LAND ROVER": 0.1468,
+        "JEEP": -0.1685,
+        "KIA": 0.0655,
+        "KRONE": 0.0033,
+        "LAND ROVER": 0.1469,
         "LEXUS": 0.2229,
         "MAN": -0.128,
         "MAUR BILPÅBYGG": 0.144,
@@ -1185,42 +1185,42 @@
         "MERCEDES-BENZ": 0.0056,
         "MG": -0.1142,
         "MINI": 0.0835,
-        "MITSUBISHI": 0.0911,
-        "NISSAN": 0.0218,
+        "MITSUBISHI": 0.0912,
+        "NISSAN": 0.0219,
         "NOR SLEP": -0.0291,
         "OPEL": 0.0153,
         "OTHER": 0.0134,
-        "PEUGEOT": 0.0042,
-        "POLESTAR": 0.316,
-        "PORSCHE": -0.2062,
+        "PEUGEOT": 0.0043,
+        "POLESTAR": 0.3161,
+        "PORSCHE": -0.2061,
         "RENAULT": 0.0123,
         "SAAB": -0.0478,
         "SCANIA": -0.1976,
-        "SCHMITZ CARGOBULL": -0.1489,
-        "SKODA": 0.0594,
+        "SCHMITZ CARGOBULL": -0.1488,
+        "SKODA": 0.0595,
         "SSANGYONG": -0.6304,
         "SUBARU": 0.0893,
         "SUZUKI": -0.0147,
-        "TESLA": -0.0202,
+        "TESLA": -0.0201,
         "TESLA MOTORS": 0.0664,
-        "TOYOTA": 0.0063,
+        "TOYOTA": 0.0064,
         "VOLKSWAGEN": 0.0406,
         "VOLVO": 0.0125
       },
       "fuel": {
-        "BEV": -0.0022,
-        "Diesel": 0.025,
-        "Other": -0.0558,
-        "Petrol": 0.0273
+        "BEV": -0.0017,
+        "Diesel": 0.0255,
+        "Other": -0.0552,
+        "Petrol": 0.0278
       },
       "ctrl_type": {
-        "E": 0.0055,
-        "P": -0.0113
+        "E": 0.0067,
+        "P": -0.0102
       },
       "numeric": {
         "km_scaled": 0.001947,
         "age_scaled": -0.056152,
-        "insp_scaled": 0.066475
+        "insp_scaled": 0.066476
       },
       "scaler": {
         "km_mean": 174189.79,
