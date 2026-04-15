@@ -49,7 +49,6 @@ select{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:
 .ci-lo{text-align:right}.ci-hi{text-align:left}
 .ci-note{font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:2px}
 .verdict-badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;margin-top:6px;font-family:var(--mono)}
-.risk-score-badge{min-height:28px;margin-bottom:2px}
 
 /* Risk factor panel */
 .risk-panel{border-radius:12px;padding:18px;margin-bottom:14px;border:1px solid var(--border)}
@@ -95,15 +94,6 @@ select{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:
 .coef-ci-text{font-size:9px;color:var(--muted);font-family:var(--mono)}
 footer{text-align:center;font-size:11px;color:var(--muted);padding:2rem 1rem;border-top:1px solid var(--border);margin-top:1rem;line-height:1.8}
 footer a{color:var(--muted)}
-.nav-btn{font-family:var(--body);font-size:13px;font-weight:500;padding:6px 14px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s}
-.nav-btn:hover{background:var(--bg);color:var(--text)}
-.nav-btn.active{background:var(--text);color:var(--surface);border-color:var(--text)}
-.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:2rem}
-@media(max-width:700px){.about-grid{grid-template-columns:1fr}}
-.about-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;display:flex;gap:14px;align-items:flex-start}
-.about-icon{width:32px;height:32px;border-radius:8px;background:var(--bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;font-weight:500;color:var(--muted);flex-shrink:0}
-.about-title{font-family:var(--display);font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:6px}
-.about-body{font-size:13px;color:var(--muted);line-height:1.7}
 .loading-overlay{text-align:center;padding:3rem;font-family:var(--mono);font-size:13px;color:var(--muted)}
 .error-box{background:var(--fail-bg);border:1px solid #e5b3b3;border-radius:8px;padding:16px;font-size:13px;color:var(--fail);font-family:var(--mono)}
 </style>
@@ -111,78 +101,65 @@ footer a{color:var(--muted)}
 <body>
 <header>
   <div class="logo">EU<span>kontroll</span>.no — PKK predictor</div>
-  <div style="display:flex;align-items:center;gap:12px">
-    <nav style="display:flex;gap:4px">
-      <button class="nav-btn active" id="nav-predictor" onclick="showPage('predictor')">Prediktor</button>
-      <button class="nav-btn" id="nav-about" onclick="showPage('about')">Om verktøyet</button>
-    </nav>
-    <div class="meta-pill"><span class="dot-live"></span><span id="header-trained">loading…</span></div>
-  </div>
+  <div class="meta-pill"><span class="dot-live"></span><span id="header-trained">loading…</span></div>
 </header>
 <main>
   <div id="app-loading" class="loading-overlay">Loading model…</div>
   <div id="app-error" class="error-box" style="display:none"></div>
   <div id="app" style="display:none">
 
-  <div id="page-predictor">
     <div class="hero">
-      <h1>Vil bilen din bestå EU-kontrollen?</h1>
-      <p>Basert på <span id="hero-samples">480 000</span> virkelige norske EU-kontroller fra Statens vegvesen. Oppdateres hver natt.</p>
+      <h1>Klarer bilen din EU-kontrollen?</h1>
+      <p>Logistisk regresjonsmodell trent på Statens vegvesens åpne PKK-datasett — alle 12 kvartalsfiler (~720 000 kontroller). Trenes nattlig via GitHub Actions.</p>
     </div>
 
     <div class="stats-row">
-      <div class="stat-card"><div class="stat-label">Kontroller analysert</div><div class="stat-val" id="s-samples">—</div><div class="stat-sub">inspeksjonsdata</div></div>
-      <div class="stat-card"><div class="stat-label">Treffsikkerhet</div><div class="stat-val" id="s-auc">—</div><div class="stat-sub">sterk prediksjon</div></div>
-      <div class="stat-card"><div class="stat-label">Nasjonal bestått-rate</div><div class="stat-val" id="s-passrate">—</div><div class="stat-sub">1 av 3 stryker</div></div>
-      <div class="stat-card"><div class="stat-label">Sist oppdatert</div><div class="stat-val" style="font-size:1rem;padding-top:4px" id="s-date">—</div><div class="stat-sub">oppdateres nattlig</div></div>
+      <div class="stat-card"><div class="stat-label">Training samples</div><div class="stat-val" id="s-samples">—</div><div class="stat-sub">inspection records</div></div>
+      <div class="stat-card"><div class="stat-label">AUC-ROC</div><div class="stat-val" id="s-auc">—</div><div class="stat-sub">model accuracy</div></div>
+      <div class="stat-card"><div class="stat-label">National pass rate</div><div class="stat-val" id="s-passrate">—</div><div class="stat-sub">all vehicles</div></div>
+      <div class="stat-card"><div class="stat-label">Model</div><div class="stat-val" style="font-size:1rem;padding-top:4px">Logistic Reg.</div><div class="stat-sub" id="s-date">—</div></div>
     </div>
 
     <div class="grid2">
       <div class="card">
-        <div class="card-title">Bil A</div>
-        <div class="field"><label>Merke</label><select id="brandA"></select></div>
-        <div class="field"><label>Drivstoff</label><select id="fuelA"></select></div>
-        <div class="field"><label>Første gang registrert i Norge</label><select id="regA"></select></div>
-        <div class="field"><label>Kilometerstand — <span id="kmA-out">60 000</span> km</label><div class="slider-wrap"><input type="range" id="kmA" min="0" max="400" value="60" step="5"><span class="slider-out" id="kmA-disp">60k</span></div></div>
-        <div class="field"><label>Type kontroll</label><select id="typeA"><option value="P">Periodisk kontroll</option><option value="E">Etterkontroll (strøk forrige gang)</option></select></div>
-        <div id="inspInfoA" style="font-size:12px;font-family:var(--mono);padding:8px 10px;border-radius:7px;margin-bottom:10px;line-height:1.5"></div>
+        <div class="card-title">Vehicle A</div>
+        <div class="field"><label>Brand</label><select id="brandA"></select></div>
+        <div class="field"><label>Fuel type</label><select id="fuelA"></select></div>
+        <div class="field"><label>Age — <span id="ageA-out">4</span> years</label><div class="slider-wrap"><input type="range" id="ageA" min="1" max="25" value="4" step="1"><span class="slider-out" id="ageA-disp">4 yr</span></div></div>
+        <div class="field"><label>Odometer — <span id="kmA-out">60 000</span> km</label><div class="slider-wrap"><input type="range" id="kmA" min="0" max="400" value="60" step="5"><span class="slider-out" id="kmA-disp">60k</span></div></div>
+        <div class="field"><label>Control type</label><select id="typeA"><option value="P">Periodisk (P)</option><option value="E">Etterkontroll (E)</option></select></div>
         <div class="result-area">
-          <div class="risk-score-badge" id="riskScoreA"></div>
           <div class="prob-big" id="probA">—</div>
-          <div class="prob-sub" id="probSubA">sannsynlighet for å bestå</div>
+          <div class="prob-sub">probability of passing</div>
           <div class="prob-bar-track"><div class="prob-bar-fill" id="barA"></div></div>
           <div class="ci-row">
             <span class="ci-lo" id="ciLoA">—</span>
             <div class="ci-track"><div class="ci-range" id="ciRangeA"></div><div class="ci-dot" id="ciDotA"></div></div>
             <span class="ci-hi" id="ciHiA">—</span>
           </div>
-          <div class="ci-note" id="ciNoteA">Resultatet ligger trolig mellom disse verdiene</div>
+          <div class="ci-note">95% confidence interval</div>
           <div class="verdict-badge" id="verdictA"></div>
-          <div id="deadlineA" style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:8px"></div>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-title">Bil B</div>
-        <div class="field"><label>Merke</label><select id="brandB"></select></div>
-        <div class="field"><label>Drivstoff</label><select id="fuelB"></select></div>
-        <div class="field"><label>Første gang registrert i Norge</label><select id="regB"></select></div>
-        <div class="field"><label>Kilometerstand — <span id="kmB-out">60 000</span> km</label><div class="slider-wrap"><input type="range" id="kmB" min="0" max="400" value="60" step="5"><span class="slider-out" id="kmB-disp">60k</span></div></div>
-        <div class="field"><label>Type kontroll</label><select id="typeB"><option value="P">Periodisk kontroll</option><option value="E">Etterkontroll (strøk forrige gang)</option></select></div>
-        <div id="inspInfoB" style="font-size:12px;font-family:var(--mono);padding:8px 10px;border-radius:7px;margin-bottom:10px;line-height:1.5"></div>
+        <div class="card-title">Vehicle B</div>
+        <div class="field"><label>Brand</label><select id="brandB"></select></div>
+        <div class="field"><label>Fuel type</label><select id="fuelB"></select></div>
+        <div class="field"><label>Age — <span id="ageB-out">4</span> years</label><div class="slider-wrap"><input type="range" id="ageB" min="1" max="25" value="4" step="1"><span class="slider-out" id="ageB-disp">4 yr</span></div></div>
+        <div class="field"><label>Odometer — <span id="kmB-out">60 000</span> km</label><div class="slider-wrap"><input type="range" id="kmB" min="0" max="400" value="60" step="5"><span class="slider-out" id="kmB-disp">60k</span></div></div>
+        <div class="field"><label>Control type</label><select id="typeB"><option value="P">Periodisk (P)</option><option value="E">Etterkontroll (E)</option></select></div>
         <div class="result-area">
-          <div class="risk-score-badge" id="riskScoreB"></div>
           <div class="prob-big" id="probB">—</div>
-          <div class="prob-sub" id="probSubB">sannsynlighet for å bestå</div>
+          <div class="prob-sub">probability of passing</div>
           <div class="prob-bar-track"><div class="prob-bar-fill" id="barB"></div></div>
           <div class="ci-row">
             <span class="ci-lo" id="ciLoB">—</span>
             <div class="ci-track"><div class="ci-range" id="ciRangeB"></div><div class="ci-dot" id="ciDotB"></div></div>
             <span class="ci-hi" id="ciHiB">—</span>
           </div>
-          <div class="ci-note" id="ciNoteB">Resultatet ligger trolig mellom disse verdiene</div>
+          <div class="ci-note">95% confidence interval</div>
           <div class="verdict-badge" id="verdictB"></div>
-          <div id="deadlineB" style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:8px"></div>
         </div>
       </div>
     </div>
@@ -193,151 +170,48 @@ footer a{color:var(--muted)}
       <div id="riskPanelB"></div>
     </div>
 
-    <!-- Failure fingerprint -->
     <div class="card">
-      <div class="card-title">Hva er mest sannsynlig å feile?</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6">
-        Basert på statistiske mønstre fra tusenvis av lignende biler i Norge. Viser risikoen for feil per kontrollpunkt sammenlignet med landsgjennomsnittet. Den loddrette linjen viser hva som er normalt nasjonalt.
-      </div>
-      <div id="fingerprintSection"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">Sammenligning</div>
+      <div class="card-title">Comparison</div>
       <div class="diff-text" id="diffText">—</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:500">Beståttandel etter alder (ved samme kilometerstand)</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:500">Pass probability vs. age (at current odometer)</div>
       <div style="position:relative;height:210px"><canvas id="ageChart"></canvas></div>
     </div>
 
     <div class="card">
       <div class="card-title">Hva påvirker resultatet?</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Viser hvor mye hvert kjennetegn øker eller senker sannsynligheten for å bestå, sammenlignet med gjennomsnittet. Grønt = bra, rødt = risiko.</div>
+      <div style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:12px">Viser hvor mye hvert alternativ hever eller senker sannsynligheten for å bestå, sammenlignet med gjennomsnittet. <strong style="color:var(--text)">pp = prosentpoeng</strong> — f.eks. betyr +5,0 pp at denne kategorien øker beståttandelen med 5 prosentpoeng. Linjer viser 95 % konfidensintervall.</div>
       <div id="coefSections"></div>
     </div>
 
     <div class="card">
+      <div class="card-title">Kapittelenes betydning for modellen</div>
+      <div style="position:relative;height:260px"><canvas id="defectChart"></canvas></div>
+    </div>
+
+    <div class="card">
       <div class="card-title">Vanligste feilpunkter nasjonalt</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6">
-        Andel av <span id="def-total">—</span> gjennomførte kontroller hvor det ble registrert feil per kapittel. Mørk strek = andel av strykkede biler.
+      <div style="font-size:11px;color:var(--muted);font-family:var(--mono);margin-bottom:14px">
+        Andel av <span id="def-total">—</span> kontroller der hvert kapittel hadde minst én registrert feil.
+        Mørk stolpe = kun underkjente kjøretøy.
       </div>
       <div id="defectFailSection"></div>
       <div style="margin-top:20px">
-        <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:10px">Hyppigste feilpunkter per drivstofftype — topp 3</div>
+        <div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:10px">Failure rates by fuel type — top 3 chapters</div>
         <div id="defectByFuel"></div>
       </div>
     </div>
 
-  </div><!-- end page-predictor -->
-
-  <div id="page-about" style="display:none">
-    <div class="hero">
-      <h1>Om dette verktøyet</h1>
-      <p>En guide til hvordan du leser og forstår PKK-prediksjonen — for deg uten teknisk bakgrunn.</p>
-    </div>
-
-    <div class="about-grid">
-
-      <div class="about-section">
-        <div class="about-icon">?</div>
-        <div>
-          <div class="about-title">Hva er dette?</div>
-          <div class="about-body">Dette verktøyet beregner sannsynligheten for at en bestemt biltype vil bestå EU-kontrollen (PKK). Det er bygget på åpne data fra Statens vegvesen og oppdateres automatisk hver natt med de nyeste kontrollresultatene.</div>
-        </div>
-      </div>
-
-      <div class="about-section">
-        <div class="about-icon">%</div>
-        <div>
-          <div class="about-title">Hva betyr prosenten?</div>
-          <div class="about-body">En prediksjon på <strong>72%</strong> betyr: av 100 biler med samme merke, drivstoff, alder og kilometerstand ville omtrent 72 bestå EU-kontrollen. Det er et statistisk estimat — ikke en garanti for akkurat din bil.</div>
-        </div>
-      </div>
-
-      <div class="about-section">
-        <div class="about-icon">⬌</div>
-        <div>
-          <div class="about-title">Hva betyr usikkerhetsspennet?</div>
-          <div class="about-body">Spennet som vises under prosenten (f.eks. <strong>68% – 76%</strong>) betyr at vi med stor sikkerhet tror det sanne resultatet ligger innenfor dette området. Et smalt spenn betyr høy sikkerhet. Et bredt spenn betyr at modellen er mer usikker — behandle brede spenn som en pekepinn, ikke et presist tall.</div>
-        </div>
-      </div>
-
-      <div class="about-section">
-        <div class="about-icon">#</div>
-        <div>
-          <div class="about-title">Hva betyr kontrollnummer?</div>
-          <div class="about-body">I Norge skal biler til første EU-kontroll 4 år etter registrering, deretter hvert 2. år. Verktøyet beregner automatisk hvilken kontroll bilen er inne til basert på registreringsår. En bil fra 2018 er nå inne til sin <strong>3. kontroll</strong> (forfall 2026). Første gangs kontroll har langt høyere beståttandel (~85%) enn senere kontroller (~65–70%).</div>
-        </div>
-      </div>
-
-      <div class="about-section">
-        <div class="about-icon">!</div>
-        <div>
-          <div class="about-title">Hvorfor scorer Tesla lavt?</div>
-          <div class="about-body">Teslas negative score i modellen gjenspeiler hele den norske Tesla-flåten. Norge har en av verdens eldste Tesla-flåter — mange biler registrert 2013–2016 er nå inne til sin 5. eller 6. kontroll og har opphopet reelle feil (fjæring, dørtetninger, 12V-batteri, bremseslitasje). Nyere modeller (Model 3 fra 2019+, Model Y fra 2021+) gjør det trolig bedre enn merkegjennomsnitttet antyder. Modellen skiller ikke mellom modeller innad i et merke.</div>
-        </div>
-      </div>
-
-      <div class="about-section">
-        <div class="about-icon">84%</div>
-        <div>
-          <div class="about-title">Hva betyr "treffsikkerhet 84%"?</div>
-          <div class="about-body">Dette måler hvor godt modellen skiller biler som består fra biler som stryker. En score på 100% er perfekt prediksjon. En score på 50% er ikke bedre enn å gjette. Vår score på <strong>84%</strong> regnes som sterk for denne typen data — tilsvarende at modellen rangerer en bestått bil over en strøket bil i 84 av 100 tilfeller.</div>
-        </div>
-      </div>
-
-      <div class="about-section">
-        <div class="about-icon">🔧</div>
-        <div>
-          <div class="about-title">Hva er de vanligste feilene?</div>
-          <div class="about-body">Nasjonalt er de tre hyppigste feilpunktene: <strong>Bremser</strong> (mest utbredt på tvers av alle drivstofftyper), <strong>Lys og elektrisk</strong>, og <strong>Aksler, hjul og dekk</strong>. Elbiler stryker sjelden på utslipp, men feiler like ofte på bremser og lys. Full oversikt vises i feilpunkt-seksjonen på prediktorssiden.</div>
-        </div>
-      </div>
-
-      <div class="about-section">
-        <div class="about-icon">E</div>
-        <div>
-          <div class="about-title">Hva er etterkontroll?</div>
-          <div class="about-body">Etterkontroll er en ny kontroll etter at bilen har strøket. Disse bilene har allerede fått utbedret feilene, så beståttandelen er langt høyere enn ved vanlig periodisk kontroll. Velger du etterkontroll i prediktoren vil sannsynligheten øke betydelig — dette er reelt og forventet.</div>
-        </div>
-      </div>
-
-      <div class="about-section">
-        <div class="about-icon">*</div>
-        <div>
-          <div class="about-title">Viktige begrensninger</div>
-          <div class="about-body">Modellen predikerer for en <em>type</em> bil — ikke en spesifikk bil. Den vet ikke om individuell servicehistorikk, nylige reparasjoner, tilbakekallinger eller programvareoppdateringer. Prediksjoner for sjeldne merker eller uvanlige drivstofftyper har større usikkerhet. Ikke bruk dette som erstatning for en faktisk mekanisk inspeksjon.</div>
-        </div>
-      </div>
-
-      <div class="about-section">
-        <div class="about-icon">D</div>
-        <div>
-          <div class="about-title">Datakilde og metode</div>
-          <div class="about-body">Data: Statens vegvesen — Periodisk Kjøretøykontroll (PKK), publisert kvartalsvis på GitHub under CC BY 4.0. Modell: logistisk regresjon trent på ~480 000 inspeksjonsdata. Oppdateres automatisk hver natt kl. 03:00 UTC via GitHub Actions. <a href="https://github.com/tomvanaylward-cmyk/pkk-dashboard" target="_blank" style="color:var(--accent)">Se kildekode →</a></div>
-        </div>
-      </div>
-
-    </div>
-  </div><!-- end page-about -->
-
-  </div><!-- end app -->
+  </div>
 </main>
 <footer>
   Data: <a href="https://github.com/vegvesen/periodisk-kjoretoy-kontroll" target="_blank">Statens vegvesen / periodisk-kjoretoy-kontroll</a> &nbsp;·&nbsp;
-  Lisens: CC BY 4.0 &nbsp;·&nbsp; Oppdateres nattlig &nbsp;·&nbsp; Ikke tilknyttet Statens vegvesen
+  License: CC BY 4.0 &nbsp;·&nbsp; Model retrained nightly &nbsp;·&nbsp; Not affiliated with Statens vegvesen
 </footer>
 
 <script>
 let COEF = null;
 let ageChartInst = null;
 let defectChartInst = null;
-
-function showPage(page) {
-  document.getElementById('page-predictor').style.display = page==='predictor' ? '' : 'none';
-  document.getElementById('page-about').style.display     = page==='about'     ? '' : 'none';
-  document.getElementById('nav-predictor').classList.toggle('active', page==='predictor');
-  document.getElementById('nav-about').classList.toggle('active',     page==='about');
-}
 
 async function init() {
   try {
@@ -357,8 +231,7 @@ async function init() {
       el.addEventListener('input', () => {
         if (el.id === 'brandA') lockFuelForBrand('A', el.value);
         if (el.id === 'brandB') lockFuelForBrand('B', el.value);
-        syncSliders();
-        update();
+        syncSliders(); update();
       });
     });
     update();
@@ -370,40 +243,14 @@ async function init() {
   }
 }
 
-const NOW_YEAR = new Date().getFullYear();
-
-function getInspectionStatus(regYear) {
-  const age = NOW_YEAR - regYear;
-  const firstDue = regYear + 4;
-  if (age < 4) {
-    const monthsLeft = Math.round((firstDue - NOW_YEAR) * 12);
-    return {valid:false, inspNum:1, age:Math.max(age,1),
-      message:`Ikke forfalt ennå — første EU-kontroll forfaller ${firstDue}`,
-      deadline: `Forfall om ca. ${firstDue - NOW_YEAR} år (${firstDue})`,
-      color:'var(--pass)', bg:'var(--pass-bg)'};
-  }
-  const inspNum = Math.min(15, 1 + Math.floor((age - 4) / 2));
-  const nextDue = firstDue + (inspNum - 1) * 2;
-  const overdue = NOW_YEAR > nextDue;
-  const nextNext = nextDue + 2;
-  return {
-    valid: true, inspNum, age, nextDue,
-    deadline: overdue
-      ? `⚠ Forfalt siden ${nextDue} — bør kontrolleres snarest`
-      : `Neste forfall: ${nextDue}`,
-    message: overdue
-      ? `${inspNum}. kontroll — forfalt siden ${nextDue}`
-      : `${inspNum}. kontroll — forfall ${nextDue}`,
-    color: overdue ? 'var(--fail)' : 'var(--warn)',
-    bg:    overdue ? 'var(--fail-bg)' : 'var(--warn-bg)',
-  };
-}
-
 function syncSliders() {
   ['A','B'].forEach(s => {
-    const km = document.getElementById('km'+s).value;
-    document.getElementById('km'+s+'-out').textContent  = (km*1000).toLocaleString('no-NO');
-    document.getElementById('km'+s+'-disp').textContent = km+'k';
+    const age = document.getElementById('age'+s).value;
+    const km  = document.getElementById('km'+s).value;
+    document.getElementById('age'+s+'-out').textContent  = age;
+    document.getElementById('age'+s+'-disp').textContent = age + ' yr';
+    document.getElementById('km'+s+'-out').textContent   = (km*1000).toLocaleString('no-NO');
+    document.getElementById('km'+s+'-disp').textContent  = km + 'k';
   });
 }
 
@@ -455,59 +302,59 @@ function getRiskFactors(brand, fuel, age, km, ctrlType) {
 
   const factors = [
     {
-      name: 'Merke — ' + brand,
+      name: 'Brand — ' + brand,
       effect: bc.coef,
       label: brand,
       type: 'brand',
       tip: bc.coef < -0.05
-        ? `${brand}-biler stryker oftere enn gjennomsnittet i norske EU-kontroller. Vanlige feil er bremseslitasje og lysfeil.`
+        ? `${brand} vehicles tend to fail more often than average in Norwegian inspections. Common issues include brake wear and lighting faults.`
         : bc.coef > 0.05
-        ? `${brand} har et sterkt historisk resultat i norsk EU-kontroll.`
-        : `${brand} ligger nær landsgjennomsnittet.`,
+        ? `${brand} vehicles have a strong track record in Norwegian PKK inspections.`
+        : `${brand} performs close to the national average.`,
     },
     {
-      name: 'Drivstoff — ' + fuel,
+      name: 'Fuel type — ' + fuel,
       effect: fc.coef,
       label: fuel,
       type: 'fuel',
       tip: fuel === 'BEV'
-        ? 'Elbiler har regenerativ bremsing (mindre bremseslitasje) og intet eksosanlegg — to av de vanligste feilpunktene.'
+        ? 'Electric vehicles benefit from regenerative braking (less brake wear) and no exhaust system — two of the most common failure points.'
         : fuel === 'Hybrid'
-        ? 'Hybrider har færre eksosfeiler enn rene forbrenningsbiler, men har fortsatt mekanisk kompleksitet.'
+        ? 'Hybrids have fewer exhaust failures than pure combustion engines but still carry mechanical complexity.'
         : fuel === 'Diesel'
-        ? 'Dieselbiler feiler ofte på eksosutslipp og partikkelfilter.'
-        : 'Bensinbiler feiler ofte på lys, bremser og fjæring ved høyere alder.',
+        ? 'Diesel vehicles are commonly flagged for exhaust emissions and particulate filter issues.'
+        : 'Petrol vehicles are frequently flagged for lighting, brake, and suspension faults at older ages.',
     },
     {
-      name: 'Alder — ' + age + ' år',
+      name: 'Age — ' + age + ' years',
       effect: ageEff,
-      label: age + ' år',
+      label: age + ' yr',
       type: 'age',
       tip: age > 15
-        ? 'Biler over 15 år har betydelig høyere strykprosent — bremser, fjæring og rust er hovedårsakene.'
+        ? 'Vehicles over 15 years old face significantly higher failure rates — brake system, suspension, and rust are the main culprits.'
         : age > 8
-        ? 'I denne alderen er bremseslitasje og lysfeil de vanligste feilene å sjekke før kontroll.'
-        : 'En relativt ny bil — alder er ikke en vesentlig risikofaktor her.',
+        ? 'At this age, brake wear and lighting faults are the most common issues to check before inspection.'
+        : 'A relatively new vehicle — age is not a significant risk factor here.',
     },
     {
-      name: 'Kilometerstand — ' + (km*1000).toLocaleString('no-NO') + ' km',
+      name: 'Odometer — ' + (km*1000).toLocaleString('no-NO') + ' km',
       effect: kmEff,
       label: (km) + 'k km',
       type: 'km',
       tip: km > 200
-        ? 'Høy kilometerstand gir betydelig høyere strykrisiko, særlig for bremser, dekk og fjæring.'
+        ? 'High mileage vehicles show significantly higher failure rates, particularly for brakes, tyres, and suspension.'
         : km > 100
-        ? 'Moderat kjørelengde — bremseklosser og dekkmønster er det viktigste å sjekke.'
-        : 'Lav kjørelengde — kilometerstand er ikke en vesentlig risikofaktor her.',
+        ? 'Moderate mileage — brake pads and tyre wear are the main things to check.'
+        : 'Low mileage — odometer is not a significant risk factor here.',
     },
     {
-      name: ctrlType === 'E' ? 'Etterkontroll' : 'Periodisk kontroll',
+      name: 'Control type — ' + (ctrlType === 'E' ? 'Etterkontroll' : 'Periodisk'),
       effect: tc.coef,
       label: ctrlType,
       type: 'ctrl',
       tip: ctrlType === 'E'
-        ? 'Etterkontroll — bilen strøk forrige gang og har fått utbedret feilene, så beståttandelen er langt høyere.'
-        : 'Vanlig periodisk kontroll — bilen er ikke forhåndskontrollert.',
+        ? 'Re-inspection (Etterkontroll) — the vehicle already failed once and had repairs done, so pass rates are much higher.'
+        : 'Standard periodic inspection — the vehicle has not been pre-screened.',
     },
   ].sort((a,b) => a.effect - b.effect);
 
@@ -515,52 +362,38 @@ function getRiskFactors(brand, fuel, age, km, ctrlType) {
 }
 
 const DEFECT_NAMES = {
-  'kap 0': 'ID og dokumenter',
+  'kap 0': 'Identifikasjon',
   'kap 1': 'Bremser',
   'kap 2': 'Styring',
   'kap 3': 'Sikt',
-  'kap 4': 'Lys og elektrisk',
-  'kap 5': 'Aksler, hjul og dekk',
-  'kap 6': 'Karosseri og understell',
+  'kap 4': 'Lys & elektrisk',
+  'kap 5': 'Hjul & dekk',
+  'kap 6': 'Karosseri',
   'kap 7': 'Annet utstyr',
-  'kap 8': 'Støy og utslipp',
-  'kap 9': 'Prøvekjøring',
+  'kap 8': 'Utslipp',
+  'kap 9': 'Kjørekontroll',
   'kap 10': 'Miljø',
 };
 
-// Chapter name mapping for fingerprint (English → Norwegian)
-const CHAPTER_NO = {
-  'Identification & documents': 'ID og dokumenter',
-  'Brakes':                     'Bremser',
-  'Steering':                   'Styring',
-  'Visibility':                 'Sikt',
-  'Lights & electrical':        'Lys og elektrisk',
-  'Axles, wheels & tyres':      'Aksler, hjul og dekk',
-  'Chassis & body':             'Karosseri og understell',
-  'Other equipment':            'Annet utstyr',
-  'Noise & emissions':          'Støy og utslipp',
-  'Checks during drive':        'Prøvekjøring',
-  'Environment':                'Miljø',
+const DEFECT_DESC = {
+  'kap 0': 'Manglende dokumenter eller uleselig kjennemerke',
+  'kap 1': 'Slitte bremseklosser, skjevt bremsetrykk eller for lite bremsekraft',
+  'kap 2': 'Slitt rattlager, glappende kuleledd eller ødelagt styrekasse',
+  'kap 3': 'Sprekker i frontrute, defekte spylere eller tørkeblader',
+  'kap 4': 'Ødelagte lykter, feil lyshøyde eller defekte blinklys',
+  'kap 5': 'For lite mønsterdybde, skjev dekk­slitasje eller skadet felg',
+  'kap 6': 'Rust, skader på understell eller manglende understellsbeskyttelse',
+  'kap 7': 'Setebelte, airbag-varsellampe, reflekser eller horn',
+  'kap 8': 'Høye NOx- eller CO-verdier, defekt katalysator eller partikkelfilter',
+  'kap 9': 'Feil oppdaget under prøvekjøring',
+  'kap 10': 'Oljesøl, bremsevæske­lekkasje eller andre miljøskadelige lekkasjer',
 };
 
-// What to check per high-risk chapter
-const CHAPTER_TIPS = {
-  'Bremser':               'Be verkstedet sjekke bremseklosser, skiver og bremsekalipere.',
-  'Lys og elektrisk':      'Sjekk at alle lys fungerer: kjørelys, blinker, brems- og ryggingslys.',
-  'Aksler, hjul og dekk':  'Sjekk dekkmønster (min. 1,6 mm), dekktrykk og hjullagre.',
-  'Styring':               'Sjekk styringens frigang og om rattet trekker til siden.',
-  'Karosseri og understell':'Sjekk for rust på understell og bærende konstruksjoner.',
-  'Støy og utslipp':       'Sjekk eksosanlegget for lekkasjer eller skader.',
-  'Sikt':                  'Sjekk vindusvisker, spylervæske og frontrute for sprekker.',
-};
-
-function riskScore(prob) {
-  if (prob >= 0.85) return {score:1, label:'Svært lav risiko',  color:'#2d7a3a'};
-  if (prob >= 0.78) return {score:2, label:'Lav risiko',        color:'#2d7a3a'};
-  if (prob >= 0.70) return {score:4, label:'Moderat risiko',    color:'#8a5c00'};
-  if (prob >= 0.60) return {score:6, label:'Forhøyet risiko',   color:'#8a5c00'};
-  if (prob >= 0.50) return {score:8, label:'Høy risiko',        color:'#b33030'};
-  return                    {score:10,label:'Svært høy risiko', color:'#b33030'};
+function humanRate(rate) {
+  if (!rate || rate <= 0) return '';
+  const n = Math.round(1 / rate);
+  if (n <= 1) return 'nesten alle biler';
+  return `1 av ${n} biler`;
 }
 
 function topDefectChapters(n=3) {
@@ -583,9 +416,9 @@ function renderRiskPanel(side, brand, fuel, age, km, ctrlType, prob) {
   const severity = prob.mid >= 0.78 ? 'good' : prob.mid >= 0.60 ? 'warn' : 'bad';
   const icons    = {good:'✓', warn:'!', bad:'✗'};
   const titles   = {
-    good: 'Ser bra ut',
-    warn: 'Noe å være obs på',
-    bad:  'Høy risiko for å stryke',
+    good: 'Looking good',
+    warn: 'Some concerns',
+    bad:  'High risk of failing',
   };
 
   const maxAbs = Math.max(...factors.map(f=>Math.abs(f.effect)), 0.01);
@@ -594,9 +427,9 @@ function renderRiskPanel(side, brand, fuel, age, km, ctrlType, prob) {
     const pct = Math.abs(f.effect) / maxAbs * 100;
     const col = f.effect >= 0 ? '#2d7a3a' : '#b33030';
     const sign = f.effect >= 0 ? '+' : '';
-    const valStr = sign + (f.effect*100).toFixed(1) + ' pp';
+    const valStr = sign + (f.effect*100).toFixed(1) + 'pp';
     const cls = f.effect > 0.01 ? 'pos' : f.effect < -0.01 ? 'neg' : 'neu';
-    const rankLabel = i === 0 ? '▼ verst' : i === factors.length-1 ? '▲ best' : (i+1)+'';
+    const rankLabel = i === 0 ? '▼ worst' : i === factors.length-1 ? '▲ best' : (i+1)+'';
     return `<div class="risk-factor-row">
       <span class="risk-factor-rank">${rankLabel}</span>
       <span class="risk-factor-name">${f.name}</span>
@@ -607,16 +440,16 @@ function renderRiskPanel(side, brand, fuel, age, km, ctrlType, prob) {
 
   const tipSeverity = worst.effect < -0.05 ? 'bad' : worst.effect < 0 ? 'warn' : 'good';
   const tipText = worst.effect < -0.01
-    ? `<strong>Største risikofaktor:</strong> ${worst.tip} Vanligste feilpunkter nasjonalt: ${topDefects.join(', ')}.`
-    : `<strong>Ingen store risikofaktorer</strong> for dette bilprofilen. Verdt å sjekke uansett: ${topDefects.join(', ')}.`;
+    ? `<strong>Biggest risk:</strong> ${worst.tip} Most common failure chapters nationally: ${topDefects.join(', ')}.`
+    : `<strong>No major risk factors</strong> for this vehicle profile. Still worth checking: ${topDefects.join(', ')}.`;
 
   document.getElementById('riskPanel'+side).innerHTML = `
     <div class="risk-panel ${severity}">
       <div class="risk-header">
         <div class="risk-icon ${severity}">${icons[severity]}</div>
         <div>
-          <div class="risk-title">Bil ${side}: ${titles[severity]}</div>
-          <div class="risk-subtitle">${(prob.mid*100).toFixed(1)}% beregnet beståttandel</div>
+          <div class="risk-title">Vehicle ${side}: ${titles[severity]}</div>
+          <div class="risk-subtitle">${(prob.mid*100).toFixed(1)}% predicted pass probability</div>
         </div>
       </div>
       <div class="risk-factors">${factorRows}</div>
@@ -630,68 +463,22 @@ function probColor(p) {
   return 'var(--fail)';
 }
 function verdict(p) {
-  if (p >= 0.78) return {text:'Trolig bestått',   bg:'var(--pass-bg)', col:'var(--pass)'};
-  if (p >= 0.60) return {text:'Usikkert',          bg:'var(--warn-bg)', col:'var(--warn)'};
-  return              {text:'Risiko for å stryke', bg:'var(--fail-bg)', col:'var(--fail)'};
+  if (p >= 0.78) return {text:'Likely to pass', bg:'var(--pass-bg)', col:'var(--pass)'};
+  if (p >= 0.60) return {text:'Uncertain',      bg:'var(--warn-bg)', col:'var(--warn)'};
+  return              {text:'Risk of failing',  bg:'var(--fail-bg)', col:'var(--fail)'};
 }
 
 function getVals(s) {
-  const regYear = +document.getElementById('reg'+s).value;
-  const status  = getInspectionStatus(regYear);
   return {
     brand:    document.getElementById('brand'+s).value,
     fuel:     document.getElementById('fuel'+s).value,
-    age:      status.age,
-    inspNum:  status.inspNum,
+    age:      +document.getElementById('age'+s).value,
     km:       +document.getElementById('km'+s).value,
     ctrlType: document.getElementById('type'+s).value,
-    status,
-    regYear,
   };
 }
 
-function renderResult(s, p, vals) {
-  const status = vals.status;
-  const info = document.getElementById('inspInfo'+s);
-  info.textContent = status.message;
-  info.style.background = status.bg;
-  info.style.color = status.color;
-
-  // deadline countdown
-  const deadlineEl = document.getElementById('deadline'+s);
-  if (deadlineEl) {
-    deadlineEl.textContent = status.deadline || '';
-    deadlineEl.style.color = status.color;
-  }
-
-  if (!status.valid) {
-    document.getElementById('prob'+s).textContent = '—';
-    document.getElementById('prob'+s).style.color = 'var(--muted)';
-    document.getElementById('bar'+s).style.width = '0%';
-    document.getElementById('ciLo'+s).textContent = '';
-    document.getElementById('ciHi'+s).textContent = '';
-    document.getElementById('ciNote'+s).textContent = '';
-    document.getElementById('ciRange'+s).style.width = '0%';
-    document.getElementById('ciDot'+s).style.left = '0%';
-    const ipr = (COEF.insp_pass_rates||{})[1];
-    document.getElementById('probSub'+s).textContent =
-      ipr ? `nasjonalt består ${(ipr.pass_rate*100).toFixed(1)}% sin 1. kontroll` : 'ikke forfalt ennå';
-    document.getElementById('verdict'+s).textContent = '';
-    const rsEl = document.getElementById('riskScore'+s);
-    if (rsEl) rsEl.innerHTML = '';
-    return;
-  }
-
-  // risk score badge
-  const rs = riskScore(p.mid);
-  const rsEl = document.getElementById('riskScore'+s);
-  if (rsEl) rsEl.innerHTML = `<span style="display:inline-block;font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;background:${rs.color}18;color:${rs.color};border:1px solid ${rs.color}40;font-family:var(--mono);margin-bottom:6px">Risikonivå ${rs.score}/10 — ${rs.label}</span>`;
-
-  // national rate for this inspection number
-  const ipr = (COEF.insp_pass_rates||{})[status.inspNum];
-  document.getElementById('probSub'+s).textContent =
-    ipr ? `nasjonalt består ${(ipr.pass_rate*100).toFixed(1)}% sin ${status.inspNum}. kontroll` : 'sannsynlighet for å bestå';
-
+function renderResult(s, p) {
   const pct = (p.mid*100).toFixed(1)+'%';
   const col = probColor(p.mid);
   document.getElementById('prob'+s).textContent = pct;
@@ -702,7 +489,6 @@ function renderResult(s, p, vals) {
   const hiPct = (p.hi*100).toFixed(1);
   document.getElementById('ciLo'+s).textContent = loPct+'%';
   document.getElementById('ciHi'+s).textContent = hiPct+'%';
-  document.getElementById('ciNote'+s).textContent = `Resultatet ligger trolig mellom ${loPct}% og ${hiPct}%`;
   document.getElementById('ciRange'+s).style.left = loPct+'%';
   document.getElementById('ciRange'+s).style.width = ((p.hi-p.lo)*100).toFixed(1)+'%';
   document.getElementById('ciRange'+s).style.background = col;
@@ -713,121 +499,26 @@ function renderResult(s, p, vals) {
   vEl.textContent = v.text; vEl.style.background = v.bg; vEl.style.color = v.col;
 }
 
-function predictChapter(chapterName, brand, fuel, age, km, inspN) {
-  const fp = (COEF.fingerprint || {})[chapterName];
-  if (!fp) return null;
-  const bc = (fp.brand || {})[brand] || 0;
-  const fc = (fp.fuel  || {})[fuel]  || 0;
-  const ct = (fp.ctrl_type || {})['P'] || 0;
-  const sc = fp.scaler || {km_mean:174496,km_std:93517,age_mean:12.72,age_std:5.92,insp_mean:3,insp_std:2};
-  const nc = fp.numeric || {};
-  const kmS   = (km*1000 - sc.km_mean)   / sc.km_std;
-  const ageS  = (age      - sc.age_mean)  / sc.age_std;
-  const inspS = (inspN    - (sc.insp_mean||3)) / (sc.insp_std||2);
-  const z = fp.intercept + bc + fc + ct +
-            (nc.km_scaled||0)*kmS + (nc.age_scaled||0)*ageS + (nc.insp_scaled||0)*inspS;
-  return 1 / (1 + Math.exp(-z));
-}
-
-function renderFingerprint(A, B) {
-  const fp = COEF.fingerprint;
-  if (!fp || Object.keys(fp).length === 0) {
-    document.getElementById('fingerprintSection').innerHTML =
-      '<div style="font-size:12px;color:var(--muted);font-family:var(--mono)">Fingerprint data not yet available — run the workflow to generate it.</div>';
-    return;
-  }
-  const chapters = Object.keys(fp);
-  const inspA = inspNum(A.age), inspB = inspNum(B.age);
-
-  const rows = chapters.map(name => {
-    const probA    = predictChapter(name, A.brand, A.fuel, A.age, A.km, inspA);
-    const probB    = predictChapter(name, B.brand, B.fuel, B.age, B.km, inspB);
-    const baseline = fp[name].baseline;
-    return { name, probA, probB, baseline };
-  }).sort((a,b) => Math.max(b.probA,b.probB) - Math.max(a.probA,a.probB));
-
-  const lA = document.getElementById('brandA').options[document.getElementById('brandA').selectedIndex].text;
-  const lB = document.getElementById('brandB').options[document.getElementById('brandB').selectedIndex].text;
-  const maxVal = Math.max(...rows.map(r => Math.max(r.probA||0, r.probB||0, r.baseline||0)), 0.01);
-
-  const colA = '#c84b2f', colB = '#2d7a3a', colBase = '#aaa';
-
-  let html = `
-    <div style="display:flex;gap:16px;font-size:11px;font-family:var(--mono);margin-bottom:14px;align-items:center">
-      <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:3px;background:${colA};display:inline-block;border-radius:2px"></span>${lA}</span>
-      <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:3px;background:${colB};display:inline-block;border-radius:2px"></span>${lB}</span>
-      <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:3px;background:${colBase};display:inline-block;border-radius:2px;opacity:.6"></span>Landsgjennomsnitt</span>
-    </div>`;
-
-  const highRiskChapters = new Set();
-
-  rows.forEach(({name, probA, probB, baseline}) => {
-    if (probA === null && probB === null) return;
-    if (baseline < 0.02) return;
-    const pA = probA ?? 0, pB = probB ?? 0;
-    const wA = ((pA/maxVal)*100).toFixed(1);
-    const wB = ((pB/maxVal)*100).toFixed(1);
-    const wBase = ((baseline/maxVal)*100).toFixed(1);
-    const flagA = (pA > baseline * 1.5 && pA > 0.05) ? '⚠ ' : '';
-    const flagB = (pB > baseline * 1.5 && pB > 0.05) ? '⚠ ' : '';
-    const nameNO = CHAPTER_NO[name] || name;
-    if (flagA || flagB) highRiskChapters.add(nameNO);
-    html += `
-      <div style="margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
-          <span style="font-weight:500;color:var(--text)">${nameNO}</span>
-          <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">
-            ${flagA}<span style="color:${colA}">${(pA*100).toFixed(1)}%</span>
-            &nbsp;/&nbsp;
-            ${flagB}<span style="color:${colB}">${(pB*100).toFixed(1)}%</span>
-            &nbsp;(snitt ${(baseline*100).toFixed(1)}%)
-          </span>
-        </div>
-        <div style="position:relative;height:7px;background:var(--bg);border-radius:4px;overflow:visible;margin-bottom:3px">
-          <div style="position:absolute;height:100%;width:${wA}%;background:${colA};border-radius:4px;opacity:0.8"></div>
-        </div>
-        <div style="position:relative;height:7px;background:var(--bg);border-radius:4px;overflow:visible">
-          <div style="position:absolute;height:100%;width:${wB}%;background:${colB};border-radius:4px;opacity:0.8"></div>
-          <div style="position:absolute;height:130%;top:-15%;width:2px;background:${colBase};left:${wBase}%;opacity:0.7;border-radius:1px"></div>
-        </div>
-      </div>`;
-  });
-
-  html += `<div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:8px">⚠ = over 50% høyere enn landsgjennomsnittet. Loddrett linje = landsgjennomsnitt.</div>`;
-
-  // "Hva bør sjekkes" checklist
-  const checkItems = [...highRiskChapters].filter(ch => CHAPTER_TIPS[ch]);
-  if (checkItems.length > 0) {
-    html += `<div style="margin-top:16px;padding:14px;background:var(--warn-bg);border-radius:8px;border-left:3px solid var(--warn)">
-      <div style="font-size:13px;font-weight:600;color:var(--warn);margin-bottom:8px">🔧 Hva bør sjekkes før kontroll?</div>
-      ${checkItems.map(ch => `<div style="font-size:12px;color:var(--text);margin-bottom:6px;display:flex;gap:8px"><span style="color:var(--warn);flex-shrink:0">→</span><span><strong>${ch}:</strong> ${CHAPTER_TIPS[ch]}</span></div>`).join('')}
-    </div>`;
-  }
-
-  document.getElementById('fingerprintSection').innerHTML = html;
-}
-
 function update() {
   const A = getVals('A'), B = getVals('B');
   const pA = predict(A.brand, A.fuel, A.age, A.km, A.ctrlType);
   const pB = predict(B.brand, B.fuel, B.age, B.km, B.ctrlType);
-  renderResult('A', pA, A);
-  renderResult('B', pB, B);
+  renderResult('A', pA);
+  renderResult('B', pB);
   renderRiskPanel('A', A.brand, A.fuel, A.age, A.km, A.ctrlType, pA);
   renderRiskPanel('B', B.brand, B.fuel, B.age, B.km, B.ctrlType, pB);
-  renderFingerprint(A, B);
 
   const diff = (pB.mid - pA.mid)*100;
   const lA = document.getElementById('brandA').options[document.getElementById('brandA').selectedIndex].text;
   const lB = document.getElementById('brandB').options[document.getElementById('brandB').selectedIndex].text;
   let html;
   if (Math.abs(diff) < 0.5) {
-    html = `<strong>${lA}</strong> og <strong>${lB}</strong> har tilnærmet lik beregnet beståttandel.`;
+    html = `<strong>${lA}</strong> and <strong>${lB}</strong> have nearly identical predicted pass probabilities.`;
   } else {
     const winner = diff>0?lB:lA, loser = diff>0?lA:lB;
     const pW = diff>0?(pB.mid*100).toFixed(1):(pA.mid*100).toFixed(1);
     const pL = diff>0?(pA.mid*100).toFixed(1):(pB.mid*100).toFixed(1);
-    html = `<strong>${winner}</strong> forventes å bestå oftere — <strong>${pW}%</strong> mot <strong>${pL}%</strong> for <strong>${loser}</strong>, en forskjell på <strong>${Math.abs(diff).toFixed(1)} prosentpoeng</strong>.`;
+    html = `<strong>${winner}</strong> is predicted to pass more often — <strong>${pW}%</strong> vs <strong>${pL}%</strong> for <strong>${loser}</strong>, a difference of <strong>${Math.abs(diff).toFixed(1)} pp</strong>.`;
   }
   document.getElementById('diffText').innerHTML = html;
   drawAgeChart(A, B, lA, lB);
@@ -873,9 +564,6 @@ function lockFuelForBrand(side, brand) {
 }
 
 function populateSelects() {
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({length:30}, (_,i) => currentYear - i);
-
   ['A','B'].forEach((s,si) => {
     const bSel = document.getElementById('brand'+s);
     const brands = Object.keys(COEF.brand||{}).sort();
@@ -886,44 +574,28 @@ function populateSelects() {
     const fSel = document.getElementById('fuel'+s);
     const fuelOrder=['BEV','Hybrid','Diesel','Petrol','Other'];
     const fuels=fuelOrder.filter(f=>f in (COEF.fuel||{}));
-    const fuelLabels = {BEV:'Elektrisk (BEV)', Hybrid:'Hybrid', Diesel:'Diesel', Petrol:'Bensin', Other:'Annet'};
-    fSel.innerHTML = fuels.map(f=>`<option value="${f}">${fuelLabels[f]||f}</option>`).join('');
+    fSel.innerHTML = fuels.map(f=>`<option value="${f}">${f}</option>`).join('');
     if(si===0){const di=fuels.indexOf('Diesel');if(di>=0)fSel.selectedIndex=di;}
     if(si===1){const ei=fuels.indexOf('BEV');if(ei>=0)fSel.selectedIndex=ei;}
-
-    const rSel = document.getElementById('reg'+s);
-    rSel.innerHTML = years.map(y => {
-      const status = getInspectionStatus(y);
-      const label = status.valid
-        ? `${y} — ${status.inspNum}. kontroll`
-        : `${y} — ikke forfalt før ${y+4}`;
-      return `<option value="${y}">${label}</option>`;
-    }).join('');
-    // default: vehicle registered 8 years ago (2 inspections done)
-    const defaultYear = currentYear - 8;
-    const defIdx = years.indexOf(defaultYear);
-    if(defIdx>=0) rSel.selectedIndex=defIdx;
   });
 }
 
 function renderMeta() {
   const m = COEF.meta||{};
   document.getElementById('s-samples').textContent  = Number(m.n_samples||0).toLocaleString('no-NO');
-  document.getElementById('s-auc').textContent      = 'Sterk ('+((m.auc_roc||0)*100).toFixed(0)+'%)';
+  document.getElementById('s-auc').textContent      = (m.auc_roc||0).toFixed(3);
   document.getElementById('s-passrate').textContent = ((COEF.pass_rate||0)*100).toFixed(1)+'%';
   const d = new Date(m.trained_at||Date.now());
   document.getElementById('s-date').textContent     = d.toLocaleDateString('no-NO',{day:'2-digit',month:'short'});
-  document.getElementById('header-trained').textContent = 'oppdatert '+d.toLocaleDateString('no-NO',{day:'2-digit',month:'short'});
-  const samplesEl = document.getElementById('hero-samples');
-  if (samplesEl) samplesEl.textContent = Number(m.n_samples||0).toLocaleString('no-NO');
+  document.getElementById('header-trained').textContent = 'trained '+d.toLocaleDateString('no-NO',{day:'2-digit',month:'short'});
 }
 
 function renderCoefs() {
   const sections=[
-    {title:'Merke — effekt på beståttandel',key:'brand'},
-    {title:'Drivstofftype',key:'fuel'},
-    {title:'Kontrolltype',key:'ctrl_type'},
-    {title:'Vektklasse',key:'weight'},
+    {title:'Bilmerke',key:'brand',desc:'Effekten av bilmerke på beståttsannsynligheten. Merker med høy positiv verdi har generelt færre feil ved norsk periodisk kontroll.'},
+    {title:'Drivstofftype',key:'fuel',desc:'Elektriske biler (BEV) har typisk færre feil — ingen eksosanlegg og regenerativ bremsing reduserer slitasje. Dieselbiler trekkes ned av avgasskapitlet.'},
+    {title:'Kontrolltype',key:'ctrl_type',desc:'Etterkontroll (E) har mye høyere beståttandel fordi kjøretøyet allerede er reparert etter å ha strøket. Periodisk (P) er standard førstegangskontroll.'},
+    {title:'Vektklasse',key:'weight',desc:'Kjøretøyets egenvekt påvirker slitasjemønster og hvilke kapitler som typisk gir utslag.'},
   ];
   const allVals=sections.flatMap(s=>Object.values(COEF[s.key]||{}).map(v=>Math.abs(typeof v==='object'?v.coef:v)));
   const maxAbs=Math.max(...allVals,0.01);
@@ -935,6 +607,7 @@ function renderCoefs() {
     });
     return `<div class="coef-section">
       <div class="coef-section-title">${sec.title}</div>
+      ${sec.desc ? `<div style="font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:8px;padding:6px 8px;background:var(--bg);border-radius:6px">${sec.desc}</div>` : ''}
       <div class="coef-grid">${data.map(([k,v])=>{
         const coef=typeof v==='object'?v.coef:+v;
         const lo=typeof v==='object'?v.lo:+v;
@@ -993,11 +666,19 @@ function renderDefects() {
     const barAll  = (ch.rate_all  / maxRate * 100).toFixed(1);
     const barFail = (ch.rate_failed / maxRate * 100).toFixed(1);
     const col = ch.rate_all > 0.15 ? '#b33030' : ch.rate_all > 0.07 ? '#8a5c00' : '#2d7a3a';
-    return `<div style="margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px">
-        <span style="font-weight:500;color:var(--text)">${ch.name}</span>
-        <span style="font-family:var(--mono);font-size:11px;color:var(--muted)">${allPct}% all &nbsp;|&nbsp; ${failPct}% of fails</span>
+    // Extract "kap N" key from chapter name for lookup
+    const kapKey = ch.name ? ch.name.replace('Ant 2-3er ','').toLowerCase().replace(/^(kap \d+).*$/, '$1') : '';
+    const desc = DEFECT_DESC[kapKey] || '';
+    const human = humanRate(ch.rate_all);
+    return `<div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;font-size:12px;margin-bottom:2px">
+        <div>
+          <span style="font-weight:500;color:var(--text)">${ch.name}</span>
+          ${desc ? `<span style="color:var(--muted);font-size:11px;margin-left:6px">— ${desc}</span>` : ''}
+        </div>
+        <span style="font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;margin-left:12px">${allPct}% &nbsp;|&nbsp; ${failPct}% av underkjente</span>
       </div>
+      ${human ? `<div style="font-size:10px;color:${col};font-family:var(--mono);margin-bottom:3px">${human} får feil i dette kapittelet</div>` : ''}
       <div style="position:relative;height:10px;background:var(--bg);border-radius:5px;overflow:hidden">
         <div style="position:absolute;height:100%;width:${barAll}%;background:${col};opacity:0.25;border-radius:5px"></div>
         <div style="position:absolute;height:100%;width:${barFail}%;background:${col};border-radius:5px"></div>
