@@ -294,16 +294,30 @@ def failure_fingerprint(feat_df, raw_df):
             print(f"  Skipping {name} — baseline too low ({baseline:.3f})")
             continue
         print(f"  Training {name}: baseline={baseline:.3f}, positives={y_chap.sum()}")
-        X = feat_df.drop(columns=["approved"])
-        pre = ColumnTransformer([
+        X_ch = feat_df.drop(columns=["approved"])
+
+        # 5-fold CV for this chapter (validation AUC)
+        cv_chapter = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+        cv_auc = cross_val_score(
+            Pipeline([
+                ("pre", ColumnTransformer([
+                    ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), cat_features),
+                    ("num", StandardScaler(), num_features),
+                ])),
+                ("clf", LogisticRegression(max_iter=500, C=1.0, solver="saga")),
+            ]),
+            X_ch, y_chap, cv=cv_chapter, scoring="roc_auc", n_jobs=1
+        )
+        print(f"  {name}: AUC {cv_auc.mean():.3f} ± {cv_auc.std():.3f}")
+
+        # Train final model on full data for coefficient extraction
+        pre_full = ColumnTransformer([
             ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), cat_features),
             ("num", StandardScaler(), num_features),
         ])
-        m = Pipeline([
-            ("pre", pre),
-            ("clf", LogisticRegression(max_iter=500, C=1.0, solver="saga"))
-        ])
-        m.fit(X, y_chap)
+        m = Pipeline([("pre", pre_full),
+                      ("clf", LogisticRegression(max_iter=500, C=1.0, solver="saga"))])
+        m.fit(X_ch, y_chap)
         feat_names = list(m.named_steps["pre"].get_feature_names_out())
         coefs      = m.named_steps["clf"].coef_[0]
         coef_map   = dict(zip(feat_names, coefs))
@@ -314,9 +328,12 @@ def failure_fingerprint(feat_df, raw_df):
         fingerprint[name] = {
             "baseline":  baseline,
             "intercept": round(float(m.named_steps["clf"].intercept_[0]), 4),
+            "auc_mean":  round(float(cv_auc.mean()), 4),
+            "auc_std":   round(float(cv_auc.std()),  4),
             "brand":     g("cat__brand_"),
             "fuel":      g("cat__fuel_"),
             "ctrl_type": g("cat__ctrl_type_"),
+            "km_bucket": g("cat__km_bucket_"),
             "numeric": {
                 "km_per_year_scaled": round(float(coef_map.get("num__km_per_year", 0)), 6),
                 "age_scaled":         round(float(coef_map.get("num__age",         0)), 6),
