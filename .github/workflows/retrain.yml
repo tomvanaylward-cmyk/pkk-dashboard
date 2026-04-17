@@ -81,7 +81,7 @@ jobs:
           git pull --rebase origin main
           git add -f docs/coefficients.json public/coefficients.json
           git diff --staged --quiet || git commit -m "chore: quarterly retrain $(date -u +%Y-%m-%d) — AUC $(python3 -c "import json; print(json.load(open('public/coefficients.json'))['meta']['auc_mean'])")"
-          git push
+          git push origin main
 
       - name: Trigger Vercel deployment
         if: success()
