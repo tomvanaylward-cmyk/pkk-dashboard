@@ -1,10 +1,10 @@
 """
-PKK EU-kontroll — logistic regression pipeline v3
+PKK EU-kontroll — logistic regression pipeline v4
 - 80k rows per file (~480k total)
 - inspection_number feature (which inspection is this for the vehicle)
 - Fuel: BEV, Hybrid, Diesel, Petrol, Other
 - No fylke (national model)
-- Bootstrap CI (8 resamples)
+- 5-fold StratifiedKFold CV (replaces bootstrap CI)
 """
 
 import os, json, zipfile, io, requests, pandas as pd, numpy as np
@@ -14,6 +14,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.metrics import roc_auc_score, classification_report
+from sklearn.model_selection import StratifiedKFold, cross_val_score
 
 GITHUB_API = "https://api.github.com/repos/vegvesen/periodisk-kjoretoy-kontroll/contents/"
 RAW_BASE   = "https://raw.githubusercontent.com/vegvesen/periodisk-kjoretoy-kontroll/main/"
@@ -160,104 +161,74 @@ def train_model(feat_df):
     print(f"Train AUC: {auc:.4f}")
     return model, auc, X
 
-def bootstrap_ci(feat_df, n_boot=8):
-    print(f"Bootstrap CI ({n_boot} resamples)...")
-    cat_features = ["brand","fuel","ctrl_type","weight"]
-    num_features = ["km","age","insp_num"]
+def cross_validate_pipeline(feat_df):
+    """5-fold stratified CV. Returns (mean_auc, std_auc, fold_scores)."""
+    cat_features = ["brand", "fuel", "ctrl_type", "weight"]
+    num_features = ["km", "age", "insp_num"]
+    X = feat_df.drop(columns=["approved"])
+    y = feat_df["approved"]
+    pre = ColumnTransformer([
+        ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), cat_features),
+        ("num", StandardScaler(), num_features),
+    ])
+    pipeline = Pipeline([
+        ("pre", pre),
+        ("clf", LogisticRegression(max_iter=500, C=1.0,
+                                   class_weight="balanced", solver="saga")),
+    ])
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    scores = cross_val_score(pipeline, X, y, cv=cv, scoring="roc_auc", n_jobs=-1)
+    print(f"5-fold CV AUC: {scores.mean():.4f} ± {scores.std():.4f}")
+    print(f"  Folds: {[round(s, 4) for s in scores.tolist()]}")
+    return float(scores.mean()), float(scores.std()), scores.tolist()
 
-    def fit_lr(X, y):
-        pre = ColumnTransformer([
-            ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), cat_features),
-            ("num", StandardScaler(), num_features),
-        ])
-        m = Pipeline([("pre", pre),
-                      ("clf", LogisticRegression(max_iter=300, C=1.0,
-                                                 class_weight="balanced", solver="saga"))])
-        m.fit(X, y)
-        return m
-
-    X0 = feat_df.drop(columns=["approved"])
-    y0 = feat_df["approved"]
-    m0 = fit_lr(X0, y0)
-    names = list(m0.named_steps["pre"].get_feature_names_out())
-    n_feat = len(names)
-    boot_coefs = np.zeros((n_boot, n_feat))
-
-    for i in range(n_boot):
-        idx = np.random.choice(len(feat_df), size=len(feat_df), replace=True)
-        df_b = feat_df.iloc[idx]
-        m_b = fit_lr(df_b.drop(columns=["approved"]), df_b["approved"])
-        names_b = list(m_b.named_steps["pre"].get_feature_names_out())
-        coefs_b = m_b.named_steps["clf"].coef_[0]
-        for j, nm in enumerate(names):
-            if nm in names_b:
-                boot_coefs[i, j] = coefs_b[names_b.index(nm)]
-        print(f"  Bootstrap {i+1}/{n_boot}")
-
-    stds = boot_coefs.std(axis=0)
-    return dict(zip(names, stds.tolist())), names
-
-def extract_coefficients(model, feat_df, auc, stds, names):
+def extract_coefficients(model, feat_df, cv_mean, cv_std, cv_scores):
     clf   = model.named_steps["clf"]
     pre   = model.named_steps["pre"]
+    names = list(pre.get_feature_names_out())
     coefs = clf.coef_[0]
-    z     = 1.96
 
-    def group_with_ci(prefix):
-        out = {}
-        for n, c in zip(names, coefs):
-            if n.startswith(prefix):
-                label = n[len(prefix):]
-                se = stds.get(n, 0)
-                out[label] = {
-                    "coef": round(float(c), 4),
-                    "lo":   round(float(c) - z*se, 4),
-                    "hi":   round(float(c) + z*se, 4),
-                }
-        return out
+    def group_coefs(prefix):
+        return {n[len(prefix):]: round(float(c), 4)
+                for n, c in zip(names, coefs) if n.startswith(prefix)}
 
     sc = pre.named_transformers_["num"]
-    num_map = {n: c for n, c in zip(names, coefs) if n.startswith("num__")}
-
-    insp_pass = feat_df.groupby("insp_num")["approved"].agg(["mean","count"])
+    insp_pass = feat_df.groupby("insp_num")["approved"].agg(["mean", "count"])
     insp_rates = {
-        int(k): {"pass_rate": round(float(v["mean"]),4), "n": int(v["count"])}
+        int(k): {"pass_rate": round(float(v["mean"]), 4), "n": int(v["count"])}
         for k, v in insp_pass.iterrows()
         if v["count"] >= 100
     }
-
     brand_fuel = {}
     for brand in feat_df["brand"].unique():
-        sub = feat_df[feat_df["brand"]==brand]
+        sub = feat_df[feat_df["brand"] == brand]
         dominant = sub["fuel"].value_counts()
         if len(dominant) > 0:
             top = dominant.index[0]
-            top_pct = dominant.iloc[0] / len(sub)
             brand_fuel[brand] = {
                 "dominant": top,
-                "exclusive": bool(top_pct > 0.95)
+                "exclusive": bool(dominant.iloc[0] / len(sub) > 0.95),
             }
-
     return {
         "meta": {
-            "trained_at": datetime.now(timezone.utc).isoformat(),
-            "n_samples":  int(len(feat_df)),
-            "auc_roc":    round(float(auc), 4),
-            "pass_rate":  round(float(feat_df["approved"].mean()), 4),
-            "model":      "Logistic Regression v3",
+            "trained_at":   datetime.now(timezone.utc).isoformat(),
+            "n_samples":    int(len(feat_df)),
+            "auc_mean":     round(cv_mean, 4),
+            "auc_std":      round(cv_std,  4),
+            "auc_folds":    [round(s, 4) for s in cv_scores],
+            "pass_rate":    round(float(feat_df["approved"].mean()), 4),
+            "model":        "LogReg v4 — 5-fold CV",
+            "calibrated":   False,
         },
-        "intercept":  round(float(clf.intercept_[0]), 4),
-        "brand":      group_with_ci("cat__brand_"),
-        "fuel":       group_with_ci("cat__fuel_"),
-        "ctrl_type":  group_with_ci("cat__ctrl_type_"),
-        "weight":     group_with_ci("cat__weight_"),
+        "intercept":       round(float(clf.intercept_[0]), 4),
+        "brand":           group_coefs("cat__brand_"),
+        "fuel":            group_coefs("cat__fuel_"),
+        "ctrl_type":       group_coefs("cat__ctrl_type_"),
+        "weight":          group_coefs("cat__weight_"),
         "numeric": {
-            "km_scaled":    round(float(num_map.get("num__km",      0)), 6),
-            "age_scaled":   round(float(num_map.get("num__age",     0)), 6),
-            "insp_scaled":  round(float(num_map.get("num__insp_num",0)), 6),
-            "km_corr":      round(float(feat_df["km"].corr(feat_df["approved"])),       4),
-            "age_corr":     round(float(feat_df["age"].corr(feat_df["approved"])),      4),
-            "insp_corr":    round(float(feat_df["insp_num"].corr(feat_df["approved"])), 4),
+            "km_scaled":    round(float(dict(zip(names, coefs)).get("num__km",       0)), 6),
+            "age_scaled":   round(float(dict(zip(names, coefs)).get("num__age",      0)), 6),
+            "insp_scaled":  round(float(dict(zip(names, coefs)).get("num__insp_num", 0)), 6),
         },
         "scaler": {
             "km_mean":    round(float(sc.mean_[0]),  2),
@@ -401,25 +372,38 @@ def defect_analysis(raw_df):
 
 def main():
     os.makedirs("docs", exist_ok=True)
-    print("=== PKK Logistic Regression pipeline v3 ===")
+    os.makedirs("public", exist_ok=True)
+    print("=== PKK LogReg pipeline v4 — 5-fold CV ===")
     raw     = load_all_data(max_files=6, sample_per_file=80000)
     feat_df = engineer_features(raw)
     if len(feat_df) < 1000:
         raise RuntimeError(f"Too few rows ({len(feat_df)})")
-    model, auc, X = train_model(feat_df)
-    stds, names   = bootstrap_ci(feat_df, n_boot=8)
-    coefs         = extract_coefficients(model, feat_df, auc, stds, names)
+
+    print("\n=== Cross-validation ===")
+    cv_mean, cv_std, cv_scores = cross_validate_pipeline(feat_df)
+
+    # AUC gate — fail fast if model quality is too low
+    if cv_mean < 0.68:
+        raise RuntimeError(f"AUC too low: {cv_mean:.4f} < 0.68 threshold")
+    print(f"AUC gate passed: {cv_mean:.4f} >= 0.68")
+
+    print("\n=== Training final model on full data ===")
+    model, _, X = train_model(feat_df)
+
+    coefs = extract_coefficients(model, feat_df, cv_mean, cv_std, cv_scores)
+
     print("\n=== Failure fingerprint (11 chapter models) ===")
     coefs["fingerprint"] = failure_fingerprint(feat_df, raw)
     coefs["defects"]     = defect_analysis(raw)
+
+    out_path = "public/coefficients.json"
+    os.makedirs("public", exist_ok=True)
+    with open(out_path, "w") as f:
+        json.dump(coefs, f, indent=2, ensure_ascii=False)
     with open("docs/coefficients.json", "w") as f:
         json.dump(coefs, f, indent=2, ensure_ascii=False)
-    print("\nSaved docs/coefficients.json")
+    print(f"\nSaved {out_path}")
     print(json.dumps(coefs["meta"], indent=2))
-    d = coefs["defects"]
-    print(f"Top defect: {d['chapters'][0]['name']} ({d['chapters'][0]['rate_all']*100:.1f}% of all inspections)")
-    print(f"Brand→fuel mappings: {len(coefs['brand_fuel'])} brands")
-    print(f"Fingerprint chapters trained: {len(coefs['fingerprint'])}/11")
 
 if __name__ == "__main__":
     main()
