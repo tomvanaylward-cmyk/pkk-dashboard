@@ -18,7 +18,7 @@ export interface PredictionResult {
   km:             number;
   kmBucket:       string;
   kmPerYear:      number;
-  overall:        number;
+  overall:        number;        // mean relative risk across chapters (1.0 = average vehicle, not a probability)
   chapters:       ChapterResult[];
   ingenHistorikk: boolean;
 }
@@ -64,6 +64,10 @@ function sigmoid(x: number): number {
   return 1 / (1 + Math.exp(-x));
 }
 
+function safeScale(value: number, mean: number, std: number): number {
+  return std > 0 ? (value - mean) / std : 0;
+}
+
 function kmToBucket(km: number): string {
   if (km < 50_000)  return "0-50k";
   if (km < 100_000) return "50-100k";
@@ -76,6 +80,7 @@ function normalizeFuel(drivstoff: string): string {
   if (d.includes("ELEKTR") && !d.includes("HYBRID")) return "BEV";
   if (d.includes("HYBRID"))  return "Hybrid";
   if (d.includes("DIESEL"))  return "Diesel";
+  // "ANNET" and unknown fall through to Petrol — the majority class in training data
   return "Petrol";
 }
 
@@ -113,6 +118,7 @@ export async function predict(
   const vehicleYear = kjoretoy.aargang ?? (currentYear - 10);
   const age       = Math.max(1, currentYear - vehicleYear);
   const kmBucket  = kmToBucket(km);
+  // Cap at 80 000 km/year — matches training data clip in scripts/train.py
   const kmPerYear = Math.min(km / age, 80_000);
   const fuel      = normalizeFuel(kjoretoy.drivstoff);
   const brand     = kjoretoy.merke.toUpperCase().substring(0, 30);
@@ -125,10 +131,10 @@ export async function predict(
   for (const [chapterName, fp] of Object.entries(coefs.fingerprint)) {
     const sc = fp.scaler;
 
-    const kmPerYearScaled = (kmPerYear - sc.km_per_year_mean) / sc.km_per_year_std;
-    const ageScaled       = (age       - sc.age_mean)         / sc.age_std;
+    const kmPerYearScaled = safeScale(kmPerYear, sc.km_per_year_mean, sc.km_per_year_std);
+    const ageScaled       = safeScale(age,       sc.age_mean,         sc.age_std);
     const inspNum         = Math.max(1, Math.floor((age - 4) / 2) + 1);
-    const inspScaled      = (inspNum   - sc.insp_mean)        / sc.insp_std;
+    const inspScaled      = safeScale(inspNum,   sc.insp_mean,        sc.insp_std);
 
     let logit = fp.intercept
       + (fp.brand[brand]             ?? 0)
@@ -155,7 +161,7 @@ export async function predict(
 
     chapters.push({
       chapter:       chapterName,
-      kapNr:         CHAPTER_KAP[chapterName] ?? 0,
+      kapNr:         CHAPTER_KAP[chapterName] ?? -1,
       baseline:      fp.baseline,
       prob:          Math.round(prob * 1000) / 1000,
       relativRisiko: Math.round(relativRisiko * 100) / 100,
