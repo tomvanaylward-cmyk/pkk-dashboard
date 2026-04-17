@@ -32,7 +32,7 @@ export default function RegnrForm() {
         return;
       }
       router.push(
-        `/results?regnr=${cleanRegnr}&km=${cleanKm}&merke=${encodeURIComponent(data.merke)}&modell=${encodeURIComponent(data.modell)}&aargang=${data.aargang}&drivstoff=${data.drivstoff}&drivlinje=${data.drivlinje}&euFrist=${data.euFrist ?? ""}`
+        `/results?regnr=${encodeURIComponent(cleanRegnr)}&km=${encodeURIComponent(String(cleanKm))}&merke=${encodeURIComponent(data.merke ?? "")}&modell=${encodeURIComponent(data.modell ?? "")}&aargang=${encodeURIComponent(String(data.aargang ?? ""))}&drivstoff=${encodeURIComponent(data.drivstoff ?? "")}&drivlinje=${encodeURIComponent(data.drivlinje ?? "")}&euFrist=${encodeURIComponent(data.euFrist ?? "")}`
       );
     } catch {
       setError("Kunne ikke kontakte SVV. Sjekk nettilkoblingen og prøv igjen.");
@@ -55,7 +55,6 @@ export default function RegnrForm() {
           placeholder="AB12345"
           maxLength={7}
           className="w-full px-4 py-3 text-lg font-mono tracking-widest border border-mint rounded-lg focus:outline-none focus:ring-2 focus:ring-green uppercase"
-          aria-label="Registreringsnummer"
           autoComplete="off"
           inputMode="text"
         />
@@ -73,7 +72,6 @@ export default function RegnrForm() {
           min={0}
           max={1000000}
           className="w-full px-4 py-3 text-lg border border-mint rounded-lg focus:outline-none focus:ring-2 focus:ring-green"
-          aria-label="Kilometerstand"
           inputMode="numeric"
         />
       </div>
