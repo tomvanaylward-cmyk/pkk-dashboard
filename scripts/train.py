@@ -114,7 +114,8 @@ def compute_inspection_number(df, now_year):
     return insp_num.clip(1, 15).fillna(1)
 
 def km_to_bucket(km: float) -> str:
-    """Categorise km into 50k-width buckets matching PKK rounding."""
+    """Categorise km into 50k-width buckets matching PKK rounding. NaN → NaN (dropped later)."""
+    if pd.isna(km):   return float("nan")  # caught by dropna on km_per_year
     if km < 50_000:   return "0-50k"
     if km < 100_000:  return "50-100k"
     if km < 150_000:  return "100-150k"
@@ -247,6 +248,7 @@ def extract_coefficients(model, feat_df, cv_mean, cv_std, cv_scores):
             "age_scaled":         round(float(dict(zip(names, coefs)).get("num__age",         0)), 6),
             "insp_scaled":        round(float(dict(zip(names, coefs)).get("num__insp_num",     0)), 6),
         },
+        # Scaler indices follow _NUM_FEATURES order: 0=km_per_year, 1=age, 2=insp_num
         "scaler": {
             "km_per_year_mean": round(float(sc.mean_[0]),  2),
             "km_per_year_std":  round(float(sc.scale_[0]), 2),
@@ -320,6 +322,7 @@ def failure_fingerprint(feat_df, raw_df):
                 "age_scaled":         round(float(coef_map.get("num__age",         0)), 6),
                 "insp_scaled":        round(float(coef_map.get("num__insp_num",    0)), 6),
             },
+            # Scaler indices follow _NUM_FEATURES order: 0=km_per_year, 1=age, 2=insp_num
             "scaler": {
                 "km_per_year_mean": round(float(sc.mean_[0]),  2),
                 "km_per_year_std":  round(float(sc.scale_[0]), 2),
