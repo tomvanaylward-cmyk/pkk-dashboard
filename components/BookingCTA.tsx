@@ -1,4 +1,4 @@
-export default function BookingCTA({ merke, kapittel }: { merke: string; kapittel: string[] }) {
+export default function BookingCTA() {
   return (
     <div className="bg-white rounded-2xl border border-mint p-6 mt-6">
       <h2 className="font-bold text-dark text-lg mb-1">Book verkstedstime</h2>

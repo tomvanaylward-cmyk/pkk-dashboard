@@ -5,7 +5,7 @@ export default function RecallBanner({ recalls }: { recalls: RecallEntry[] }) {
   return (
     <div role="alert" className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
       <h2 className="font-bold text-red-800 mb-2">
-        ⚠️ {recalls.length} åpen tilbakekalling
+        <span aria-hidden="true">⚠️</span> {recalls.length} åpen tilbakekalling
       </h2>
       <ul className="space-y-1">
         {recalls.map((r, i) => (

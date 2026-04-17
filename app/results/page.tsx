@@ -39,7 +39,7 @@ function ResultsContent() {
       .then(setResult)
       .catch(() => setError("Kunne ikke beregne risiko. Prøv igjen."));
 
-    fetchRecalls(regnr).then(setRecalls);
+    fetchRecalls(regnr).then(setRecalls).catch(() => setRecalls([]));
   }, [params]);
 
   if (error) {
@@ -98,10 +98,7 @@ function ResultsContent() {
         ))}
       </div>
 
-      <BookingCTA
-        merke={result.merke}
-        kapittel={result.chapters.filter(c => c.relativRisiko >= 1.3).map(c => c.chapter)}
-      />
+      <BookingCTA />
 
       <a href="/" className="block text-center text-green underline mt-6 text-sm">
         ← Sjekk en annen bil
