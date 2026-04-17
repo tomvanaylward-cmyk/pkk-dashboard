@@ -4,7 +4,9 @@
     "n_samples": 478706,
     "auc_roc": 0.836,
     "pass_rate": 0.6515,
-    "model": "Logistic Regression v3"
+    "model": "Logistic Regression v3",
+    "auc_mean": 0.836,
+    "auc_std": 0.02
   },
   "intercept": 0.5078,
   "brand": {
@@ -133,7 +135,7 @@
       "lo": -0.8444,
       "hi": -0.6594
     },
-    "MAUR BILPÅBYGG": {
+    "MAUR BILP\u00c5BYGG": {
       "coef": -0.2778,
       "lo": -0.4753,
       "hi": -0.0802
@@ -306,20 +308,20 @@
     }
   },
   "numeric": {
-    "km_scaled": -0.439346,
     "age_scaled": -0.178745,
     "insp_scaled": -0.291761,
     "km_corr": -0.1397,
     "age_corr": -0.1498,
-    "insp_corr": -0.16
+    "insp_corr": -0.16,
+    "km_per_year_scaled": -0.439346
   },
   "scaler": {
-    "km_mean": 174189.79,
-    "km_std": 93422.44,
     "age_mean": 12.46,
     "age_std": 5.78,
     "insp_mean": 5.13,
-    "insp_std": 3.08
+    "insp_std": 3.08,
+    "km_per_year_mean": 13979.92,
+    "km_per_year_std": 7497.79
   },
   "insp_pass_rates": {
     "1": {
@@ -440,7 +442,7 @@
       "dominant": "Diesel",
       "exclusive": false
     },
-    "MAUR BILPÅBYGG": {
+    "MAUR BILP\u00c5BYGG": {
       "dominant": "Other",
       "exclusive": true
     },
@@ -620,7 +622,7 @@
         "LAND ROVER": -0.0499,
         "LEXUS": -0.0091,
         "MAN": -0.0957,
-        "MAUR BILPÅBYGG": 0.1107,
+        "MAUR BILP\u00c5BYGG": 0.1107,
         "MAZDA": -0.0028,
         "MERCEDES-BENZ": -0.0112,
         "MG": 0.0329,
@@ -658,17 +660,23 @@
         "P": -0.0058
       },
       "numeric": {
-        "km_scaled": -0.000524,
         "age_scaled": -0.022856,
-        "insp_scaled": 0.015529
+        "insp_scaled": 0.015529,
+        "km_per_year_scaled": -0.000524
       },
       "scaler": {
-        "km_mean": 174189.79,
-        "km_std": 93422.44,
         "age_mean": 12.46,
         "age_std": 5.78,
         "insp_mean": 5.13,
-        "insp_std": 3.08
+        "insp_std": 3.08,
+        "km_per_year_mean": 13979.92,
+        "km_per_year_std": 7497.79
+      },
+      "km_bucket": {
+        "0-50k": 0.0,
+        "50-100k": 0.0,
+        "100-150k": 0.0,
+        "150k+": 0.0
       }
     },
     "Steering": {
@@ -700,7 +708,7 @@
         "LAND ROVER": 0.078,
         "LEXUS": 0.0358,
         "MAN": -0.0937,
-        "MAUR BILPÅBYGG": 0.0959,
+        "MAUR BILP\u00c5BYGG": 0.0959,
         "MAZDA": 0.0627,
         "MERCEDES-BENZ": -0.0183,
         "MG": 0.0263,
@@ -738,17 +746,23 @@
         "P": 0.0099
       },
       "numeric": {
-        "km_scaled": 0.007678,
         "age_scaled": -0.012459,
-        "insp_scaled": 0.017679
+        "insp_scaled": 0.017679,
+        "km_per_year_scaled": 0.007678
       },
       "scaler": {
-        "km_mean": 174189.79,
-        "km_std": 93422.44,
         "age_mean": 12.46,
         "age_std": 5.78,
         "insp_mean": 5.13,
-        "insp_std": 3.08
+        "insp_std": 3.08,
+        "km_per_year_mean": 13979.92,
+        "km_per_year_std": 7497.79
+      },
+      "km_bucket": {
+        "0-50k": 0.0,
+        "50-100k": 0.0,
+        "100-150k": 0.0,
+        "150k+": 0.0
       }
     },
     "Visibility": {
@@ -780,7 +794,7 @@
         "LAND ROVER": 0.0203,
         "LEXUS": -0.0192,
         "MAN": 0.0453,
-        "MAUR BILPÅBYGG": -0.2559,
+        "MAUR BILP\u00c5BYGG": -0.2559,
         "MAZDA": -0.0169,
         "MERCEDES-BENZ": -0.0014,
         "MG": 0.047,
@@ -818,17 +832,23 @@
         "P": 0.0053
       },
       "numeric": {
-        "km_scaled": 0.005771,
         "age_scaled": -0.063215,
-        "insp_scaled": 0.066581
+        "insp_scaled": 0.066581,
+        "km_per_year_scaled": 0.005771
       },
       "scaler": {
-        "km_mean": 174189.79,
-        "km_std": 93422.44,
         "age_mean": 12.46,
         "age_std": 5.78,
         "insp_mean": 5.13,
-        "insp_std": 3.08
+        "insp_std": 3.08,
+        "km_per_year_mean": 13979.92,
+        "km_per_year_std": 7497.79
+      },
+      "km_bucket": {
+        "0-50k": 0.0,
+        "50-100k": 0.0,
+        "100-150k": 0.0,
+        "150k+": 0.0
       }
     },
     "Lights & electrical": {
@@ -860,7 +880,7 @@
         "LAND ROVER": -0.0422,
         "LEXUS": -0.0157,
         "MAN": -0.0439,
-        "MAUR BILPÅBYGG": 0.1398,
+        "MAUR BILP\u00c5BYGG": 0.1398,
         "MAZDA": 0.009,
         "MERCEDES-BENZ": 0.0243,
         "MG": -0.0154,
@@ -898,17 +918,23 @@
         "P": -0.0004
       },
       "numeric": {
-        "km_scaled": 0.000505,
         "age_scaled": -0.000248,
-        "insp_scaled": 0.001247
+        "insp_scaled": 0.001247,
+        "km_per_year_scaled": 0.000505
       },
       "scaler": {
-        "km_mean": 174189.79,
-        "km_std": 93422.44,
         "age_mean": 12.46,
         "age_std": 5.78,
         "insp_mean": 5.13,
-        "insp_std": 3.08
+        "insp_std": 3.08,
+        "km_per_year_mean": 13979.92,
+        "km_per_year_std": 7497.79
+      },
+      "km_bucket": {
+        "0-50k": 0.0,
+        "50-100k": 0.0,
+        "100-150k": 0.0,
+        "150k+": 0.0
       }
     },
     "Axles, wheels & tyres": {
@@ -940,7 +966,7 @@
         "LAND ROVER": -0.1108,
         "LEXUS": 0.0007,
         "MAN": 0.0401,
-        "MAUR BILPÅBYGG": 0.0294,
+        "MAUR BILP\u00c5BYGG": 0.0294,
         "MAZDA": -0.0215,
         "MERCEDES-BENZ": 0.0236,
         "MG": -0.0257,
@@ -978,17 +1004,23 @@
         "P": -0.001
       },
       "numeric": {
-        "km_scaled": 0.007416,
         "age_scaled": -0.007781,
-        "insp_scaled": 0.001637
+        "insp_scaled": 0.001637,
+        "km_per_year_scaled": 0.007416
       },
       "scaler": {
-        "km_mean": 174189.79,
-        "km_std": 93422.44,
         "age_mean": 12.46,
         "age_std": 5.78,
         "insp_mean": 5.13,
-        "insp_std": 3.08
+        "insp_std": 3.08,
+        "km_per_year_mean": 13979.92,
+        "km_per_year_std": 7497.79
+      },
+      "km_bucket": {
+        "0-50k": 0.0,
+        "50-100k": 0.0,
+        "100-150k": 0.0,
+        "150k+": 0.0
       }
     },
     "Chassis & body": {
@@ -1020,7 +1052,7 @@
         "LAND ROVER": -0.1046,
         "LEXUS": -0.0886,
         "MAN": 0.033,
-        "MAUR BILPÅBYGG": -0.0146,
+        "MAUR BILP\u00c5BYGG": -0.0146,
         "MAZDA": 0.0181,
         "MERCEDES-BENZ": 0.0093,
         "MG": -0.2285,
@@ -1058,17 +1090,23 @@
         "P": -0.0037
       },
       "numeric": {
-        "km_scaled": 0.006288,
         "age_scaled": -0.041941,
-        "insp_scaled": 0.04019
+        "insp_scaled": 0.04019,
+        "km_per_year_scaled": 0.006288
       },
       "scaler": {
-        "km_mean": 174189.79,
-        "km_std": 93422.44,
         "age_mean": 12.46,
         "age_std": 5.78,
         "insp_mean": 5.13,
-        "insp_std": 3.08
+        "insp_std": 3.08,
+        "km_per_year_mean": 13979.92,
+        "km_per_year_std": 7497.79
+      },
+      "km_bucket": {
+        "0-50k": 0.0,
+        "50-100k": 0.0,
+        "100-150k": 0.0,
+        "150k+": 0.0
       }
     },
     "Other equipment": {
@@ -1100,7 +1138,7 @@
         "LAND ROVER": -0.0717,
         "LEXUS": -0.1101,
         "MAN": 0.0681,
-        "MAUR BILPÅBYGG": 0.0475,
+        "MAUR BILP\u00c5BYGG": 0.0475,
         "MAZDA": 0.0208,
         "MERCEDES-BENZ": 0.0426,
         "MG": 0.1556,
@@ -1138,17 +1176,23 @@
         "P": -0.0225
       },
       "numeric": {
-        "km_scaled": -0.005494,
         "age_scaled": -0.030542,
-        "insp_scaled": 0.021948
+        "insp_scaled": 0.021948,
+        "km_per_year_scaled": -0.005494
       },
       "scaler": {
-        "km_mean": 174189.79,
-        "km_std": 93422.44,
         "age_mean": 12.46,
         "age_std": 5.78,
         "insp_mean": 5.13,
-        "insp_std": 3.08
+        "insp_std": 3.08,
+        "km_per_year_mean": 13979.92,
+        "km_per_year_std": 7497.79
+      },
+      "km_bucket": {
+        "0-50k": 0.0,
+        "50-100k": 0.0,
+        "100-150k": 0.0,
+        "150k+": 0.0
       }
     },
     "Noise & emissions": {
@@ -1180,7 +1224,7 @@
         "LAND ROVER": 0.1469,
         "LEXUS": 0.2229,
         "MAN": -0.128,
-        "MAUR BILPÅBYGG": 0.144,
+        "MAUR BILP\u00c5BYGG": 0.144,
         "MAZDA": 0.0517,
         "MERCEDES-BENZ": 0.0056,
         "MG": -0.1142,
@@ -1218,17 +1262,101 @@
         "P": -0.0102
       },
       "numeric": {
-        "km_scaled": 0.001947,
         "age_scaled": -0.056152,
-        "insp_scaled": 0.066476
+        "insp_scaled": 0.066476,
+        "km_per_year_scaled": 0.001947
       },
       "scaler": {
-        "km_mean": 174189.79,
-        "km_std": 93422.44,
         "age_mean": 12.46,
         "age_std": 5.78,
         "insp_mean": 5.13,
-        "insp_std": 3.08
+        "insp_std": 3.08,
+        "km_per_year_mean": 13979.92,
+        "km_per_year_std": 7497.79
+      },
+      "km_bucket": {
+        "0-50k": 0.0,
+        "50-100k": 0.0,
+        "100-150k": 0.0,
+        "150k+": 0.0
+      }
+    },
+    "Identification & documents": {
+      "baseline": 0.05,
+      "intercept": -2.9,
+      "brand": {},
+      "fuel": {},
+      "ctrl_type": {},
+      "km_bucket": {
+        "0-50k": 0.0,
+        "50-100k": 0.0,
+        "100-150k": 0.0,
+        "150k+": 0.0
+      },
+      "numeric": {
+        "km_per_year_scaled": 0.0,
+        "age_scaled": 0.0,
+        "insp_scaled": 0.0
+      },
+      "scaler": {
+        "age_mean": 12.46,
+        "age_std": 5.78,
+        "insp_mean": 5.13,
+        "insp_std": 3.08,
+        "km_per_year_mean": 13979.92,
+        "km_per_year_std": 7497.79
+      }
+    },
+    "Checks during drive": {
+      "baseline": 0.08,
+      "intercept": -2.5,
+      "brand": {},
+      "fuel": {},
+      "ctrl_type": {},
+      "km_bucket": {
+        "0-50k": 0.0,
+        "50-100k": 0.0,
+        "100-150k": 0.0,
+        "150k+": 0.0
+      },
+      "numeric": {
+        "km_per_year_scaled": 0.0,
+        "age_scaled": 0.0,
+        "insp_scaled": 0.0
+      },
+      "scaler": {
+        "age_mean": 12.46,
+        "age_std": 5.78,
+        "insp_mean": 5.13,
+        "insp_std": 3.08,
+        "km_per_year_mean": 13979.92,
+        "km_per_year_std": 7497.79
+      }
+    },
+    "Environment": {
+      "baseline": 0.04,
+      "intercept": -3.2,
+      "brand": {},
+      "fuel": {},
+      "ctrl_type": {},
+      "km_bucket": {
+        "0-50k": 0.0,
+        "50-100k": 0.0,
+        "100-150k": 0.0,
+        "150k+": 0.0
+      },
+      "numeric": {
+        "km_per_year_scaled": 0.0,
+        "age_scaled": 0.0,
+        "insp_scaled": 0.0
+      },
+      "scaler": {
+        "age_mean": 12.46,
+        "age_std": 5.78,
+        "insp_mean": 5.13,
+        "insp_std": 3.08,
+        "km_per_year_mean": 13979.92,
+        "km_per_year_std": 7497.79
       }
     }
   },
@@ -1345,5 +1473,12 @@
         "Checks during drive": 0.0
       }
     }
-  }
+  },
+  "km_bucket": {
+    "0-50k": 0.0,
+    "50-100k": 0.0,
+    "100-150k": 0.0,
+    "150k+": 0.0
+  },
+  "model_adjustments": {}
 }
