@@ -406,6 +406,22 @@ def defect_analysis(raw_df):
         "by_fuel":           by_fuel,
     }
 
+DVSA_FACTORS_PATH = "scripts/dvsa_factors.json"
+
+def load_dvsa_factors() -> dict:
+    """Load pre-computed UK DVSA model factors if available. Returns empty dict if missing."""
+    if not os.path.exists(DVSA_FACTORS_PATH):
+        print(f"INFO: {DVSA_FACTORS_PATH} not found — model_adjustments will be empty.")
+        print("      Run scripts/dvsa_factors.py first to generate model-level factors.")
+        return {}
+    with open(DVSA_FACTORS_PATH) as f:
+        data = json.load(f)
+    factors = data.get("factors", {})
+    n_models = sum(len(v) for v in factors.values())
+    print(f"Loaded DVSA factors: {len(factors)} makes, {n_models} models")
+    return factors
+
+
 def main():
     os.makedirs("docs", exist_ok=True)
     os.makedirs("public", exist_ok=True)
@@ -427,6 +443,11 @@ def main():
     model, _, X = train_model(feat_df)
 
     coefs = extract_coefficients(model, feat_df, cv_mean, cv_std, cv_scores)
+
+    dvsa_factors = load_dvsa_factors()
+    coefs["model_adjustments"] = dvsa_factors
+    coefs["meta"]["dvsa_makes"]  = len(dvsa_factors)
+    coefs["meta"]["dvsa_models"] = sum(len(v) for v in dvsa_factors.values())
 
     print("\n=== Failure fingerprint (11 chapter models) ===")
     coefs["fingerprint"] = failure_fingerprint(feat_df, raw)
