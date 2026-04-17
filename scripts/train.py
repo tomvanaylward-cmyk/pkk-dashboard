@@ -25,8 +25,8 @@ _GH_HEADERS = {"Authorization": f"Bearer {_GH_TOKEN}"} if _GH_TOKEN else {}
 
 # Feature lists — shared by train_model(), cross_validate_pipeline(), failure_fingerprint()
 # Updated in Task 2 to include km_bucket and km_per_year
-_CAT_FEATURES = ["brand", "fuel", "ctrl_type", "weight"]
-_NUM_FEATURES = ["km", "age", "insp_num"]
+_CAT_FEATURES = ["brand", "fuel", "ctrl_type", "weight", "km_bucket"]
+_NUM_FEATURES = ["km_per_year", "age", "insp_num"]
 
 def list_zip_files():
     resp = requests.get(GITHUB_API, headers=_GH_HEADERS, timeout=20)
@@ -113,17 +113,27 @@ def compute_inspection_number(df, now_year):
     insp_num = 1 + ((age - 4) / interval).clip(lower=0).apply(np.floor)
     return insp_num.clip(1, 15).fillna(1)
 
+def km_to_bucket(km: float) -> str:
+    """Categorise km into 50k-width buckets matching PKK rounding."""
+    if km < 50_000:   return "0-50k"
+    if km < 100_000:  return "50-100k"
+    if km < 150_000:  return "100-150k"
+    return "150k+"
+
 def engineer_features(df):
     now_year = datetime.now().year
     out = pd.DataFrame(index=df.index)
     out["brand"] = df["Kjøretøymerke"].astype(str).str.strip().str.upper().str[:30]
     out["fuel"]  = df["Drivstofftype"].apply(classify_fuel)
-    out["km"]    = pd.to_numeric(df["Kilometerstand"], errors="coerce").clip(0, 500_000)
     reg_no  = pd.to_numeric(df.get("Første gang registrert i Norge"), errors="coerce")
     reg_wld = pd.to_numeric(df.get("Første gang registrert"), errors="coerce")
     reg     = reg_no.fillna(reg_wld)
     age     = (now_year - reg).where(lambda x: (x >= 0) & (x <= 50))
     out["age"] = age.clip(0, 30)
+    # Raw km — used to compute derived features, not used directly as a model feature
+    raw_km = pd.to_numeric(df["Kilometerstand"], errors="coerce").clip(0, 500_000)
+    out["km_bucket"]   = raw_km.apply(km_to_bucket)
+    out["km_per_year"] = (raw_km / out["age"].clip(lower=1)).clip(0, 80_000).round(0)
     out["insp_num"] = compute_inspection_number(df, now_year)
     ct = df["PKK Kontrolltype"].astype(str).str.strip().str.upper()
     out["ctrl_type"] = np.where(ct.str.startswith("E"), "E", "P")
@@ -136,7 +146,7 @@ def engineer_features(df):
     mask = approved.isna() & num.isin([0.0,1.0])
     approved[mask] = num[mask]
     out["approved"] = approved
-    out = out.dropna(subset=["km","age","approved"]).copy()
+    out = out.dropna(subset=["km_per_year", "age", "approved"]).copy()
     out["approved"] = out["approved"].astype(int)
     out["brand"]    = out["brand"].fillna("UNKNOWN")
     top_brands = out["brand"].value_counts().head(50).index
@@ -231,18 +241,19 @@ def extract_coefficients(model, feat_df, cv_mean, cv_std, cv_scores):
         "fuel":            group_coefs("cat__fuel_"),
         "ctrl_type":       group_coefs("cat__ctrl_type_"),
         "weight":          group_coefs("cat__weight_"),
+        "km_bucket":       group_coefs("cat__km_bucket_"),
         "numeric": {
-            "km_scaled":    round(float(dict(zip(names, coefs)).get("num__km",       0)), 6),
-            "age_scaled":   round(float(dict(zip(names, coefs)).get("num__age",      0)), 6),
-            "insp_scaled":  round(float(dict(zip(names, coefs)).get("num__insp_num", 0)), 6),
+            "km_per_year_scaled": round(float(dict(zip(names, coefs)).get("num__km_per_year", 0)), 6),
+            "age_scaled":         round(float(dict(zip(names, coefs)).get("num__age",         0)), 6),
+            "insp_scaled":        round(float(dict(zip(names, coefs)).get("num__insp_num",     0)), 6),
         },
         "scaler": {
-            "km_mean":    round(float(sc.mean_[0]),  2),
-            "km_std":     round(float(sc.scale_[0]), 2),
-            "age_mean":   round(float(sc.mean_[1]),  2),
-            "age_std":    round(float(sc.scale_[1]), 2),
-            "insp_mean":  round(float(sc.mean_[2]),  2),
-            "insp_std":   round(float(sc.scale_[2]), 2),
+            "km_per_year_mean": round(float(sc.mean_[0]),  2),
+            "km_per_year_std":  round(float(sc.scale_[0]), 2),
+            "age_mean":         round(float(sc.mean_[1]),  2),
+            "age_std":          round(float(sc.scale_[1]), 2),
+            "insp_mean":        round(float(sc.mean_[2]),  2),
+            "insp_std":         round(float(sc.scale_[2]), 2),
         },
         "insp_pass_rates": insp_rates,
         "brand_fuel":      brand_fuel,
@@ -305,17 +316,17 @@ def failure_fingerprint(feat_df, raw_df):
             "fuel":      g("cat__fuel_"),
             "ctrl_type": g("cat__ctrl_type_"),
             "numeric": {
-                "km_scaled":   round(float(coef_map.get("num__km",      0)), 6),
-                "age_scaled":  round(float(coef_map.get("num__age",     0)), 6),
-                "insp_scaled": round(float(coef_map.get("num__insp_num",0)), 6),
+                "km_per_year_scaled": round(float(coef_map.get("num__km_per_year", 0)), 6),
+                "age_scaled":         round(float(coef_map.get("num__age",         0)), 6),
+                "insp_scaled":        round(float(coef_map.get("num__insp_num",    0)), 6),
             },
             "scaler": {
-                "km_mean":   round(float(sc.mean_[0]),  2),
-                "km_std":    round(float(sc.scale_[0]), 2),
-                "age_mean":  round(float(sc.mean_[1]),  2),
-                "age_std":   round(float(sc.scale_[1]), 2),
-                "insp_mean": round(float(sc.mean_[2]),  2),
-                "insp_std":  round(float(sc.scale_[2]), 2),
+                "km_per_year_mean": round(float(sc.mean_[0]),  2),
+                "km_per_year_std":  round(float(sc.scale_[0]), 2),
+                "age_mean":         round(float(sc.mean_[1]),  2),
+                "age_std":          round(float(sc.scale_[1]), 2),
+                "insp_mean":        round(float(sc.mean_[2]),  2),
+                "insp_std":         round(float(sc.scale_[2]), 2),
             },
         }
     return fingerprint
