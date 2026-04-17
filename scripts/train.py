@@ -23,6 +23,11 @@ RAW_BASE   = "https://raw.githubusercontent.com/vegvesen/periodisk-kjoretoy-kont
 _GH_TOKEN   = os.environ.get("GITHUB_TOKEN", "")
 _GH_HEADERS = {"Authorization": f"Bearer {_GH_TOKEN}"} if _GH_TOKEN else {}
 
+# Feature lists — shared by train_model(), cross_validate_pipeline(), failure_fingerprint()
+# Updated in Task 2 to include km_bucket and km_per_year
+_CAT_FEATURES = ["brand", "fuel", "ctrl_type", "weight"]
+_NUM_FEATURES = ["km", "age", "insp_num"]
+
 def list_zip_files():
     resp = requests.get(GITHUB_API, headers=_GH_HEADERS, timeout=20)
     resp.raise_for_status()
@@ -143,8 +148,8 @@ def engineer_features(df):
 def train_model(feat_df):
     X = feat_df.drop(columns=["approved"])
     y = feat_df["approved"]
-    cat_features = ["brand","fuel","ctrl_type","weight"]
-    num_features = ["km","age","insp_num"]
+    cat_features = _CAT_FEATURES
+    num_features = _NUM_FEATURES
     pre = ColumnTransformer([
         ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), cat_features),
         ("num", StandardScaler(), num_features),
@@ -163,8 +168,8 @@ def train_model(feat_df):
 
 def cross_validate_pipeline(feat_df):
     """5-fold stratified CV. Returns (mean_auc, std_auc, fold_scores)."""
-    cat_features = ["brand", "fuel", "ctrl_type", "weight"]
-    num_features = ["km", "age", "insp_num"]
+    cat_features = _CAT_FEATURES
+    num_features = _NUM_FEATURES
     X = feat_df.drop(columns=["approved"])
     y = feat_df["approved"]
     pre = ColumnTransformer([
@@ -177,7 +182,8 @@ def cross_validate_pipeline(feat_df):
                                    class_weight="balanced", solver="saga")),
     ])
     cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
-    scores = cross_val_score(pipeline, X, y, cv=cv, scoring="roc_auc", n_jobs=-1)
+    n_jobs = int(os.environ.get("CV_N_JOBS", "-1"))
+    scores = cross_val_score(pipeline, X, y, cv=cv, scoring="roc_auc", n_jobs=n_jobs)
     print(f"5-fold CV AUC: {scores.mean():.4f} ± {scores.std():.4f}")
     print(f"  Folds: {[round(s, 4) for s in scores.tolist()]}")
     return float(scores.mean()), float(scores.std()), scores.tolist()
@@ -240,7 +246,6 @@ def extract_coefficients(model, feat_df, cv_mean, cv_std, cv_scores):
         },
         "insp_pass_rates": insp_rates,
         "brand_fuel":      brand_fuel,
-        "pass_rate":       round(float(feat_df["approved"].mean()), 4),
     }
 
 def failure_fingerprint(feat_df, raw_df):
@@ -257,8 +262,8 @@ def failure_fingerprint(feat_df, raw_df):
         "Ant 2-3er kap 9":  "Checks during drive",
         "Ant 2-3er kap 10": "Environment",
     }
-    cat_features = ["brand", "fuel", "ctrl_type", "weight"]
-    num_features = ["km", "age", "insp_num"]
+    cat_features = _CAT_FEATURES
+    num_features = _NUM_FEATURES
     raw_aligned = raw_df.iloc[:len(feat_df)].copy()
     raw_aligned.index = feat_df.index
     fingerprint = {}
@@ -397,7 +402,6 @@ def main():
     coefs["defects"]     = defect_analysis(raw)
 
     out_path = "public/coefficients.json"
-    os.makedirs("public", exist_ok=True)
     with open(out_path, "w") as f:
         json.dump(coefs, f, indent=2, ensure_ascii=False)
     with open("docs/coefficients.json", "w") as f:
