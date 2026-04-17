@@ -5,6 +5,36 @@ export const runtime = "edge";
 
 const SVV_BASE = "https://www.vegvesen.no/ws/no/vegvesen/kjoretoy/felles/datautlevering/enkeltoppslag/kjoretoydata";
 
+interface SVVRawKjoretoy {
+  godkjenning?: {
+    tekniskGodkjenning?: {
+      tekniskeData?: {
+        generelt?: {
+          merke?: Array<{ merke?: string }>;
+          handelsbetegnelse?: string[];
+          typegodkjenningsunderlag?: Array<{ sistEndretAr?: number }>;
+        };
+        motorOgDrivverk?: {
+          motor?: Array<{
+            drivstoff?: Array<{ kodeBeskrivelse?: string }>;
+          }>;
+          drivstoffOgGirkasse?: Array<{
+            drivhjulskode?: { kodeBeskrivelse?: string };
+          }>;
+        };
+        karosseriOgLasteplan?: {
+          rFarge?: Array<{ kodeBeskrivelse?: string }>;
+        };
+      };
+    };
+  };
+  periodiskKjoretoyKontroll?: { kontrollfrist?: string };
+}
+
+interface SVVRawResponse {
+  kjoretoydataListe?: SVVRawKjoretoy[];
+}
+
 function normalizeDrivlinje(raw: string): SVVKjoretoy["drivlinje"] {
   const r = raw.toUpperCase().replace(/\s/g, "");
   if (r.includes("4WD") || r.includes("AWD") || r.includes("FIREHJUL")) return "4WD";
@@ -19,12 +49,14 @@ export async function GET(req: NextRequest): Promise<NextResponse<SVVKjoretoy | 
     return NextResponse.json({ error: "Ugyldig registreringsnummer", status: 400 }, { status: 400 });
   }
 
+  const normalized = regnr.trim().toUpperCase().replace(/\s/g, "");
+
   const apiKey = process.env.SVV_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: "API key not configured", status: 500 }, { status: 500 });
   }
 
-  const url = `${SVV_BASE}?kjennemerke=${regnr.toUpperCase().replace(/\s/g, "")}`;
+  const url = `${SVV_BASE}?kjennemerke=${normalized}`;
   const resp = await fetch(url, {
     headers: {
       "SVV-Authorization": apiKey,
@@ -37,23 +69,27 @@ export async function GET(req: NextRequest): Promise<NextResponse<SVVKjoretoy | 
     if (resp.status === 404) {
       return NextResponse.json({ error: "Kjøretøy ikke funnet", status: 404 }, { status: 404 });
     }
-    return NextResponse.json({ error: `SVV API feil: ${resp.status}`, status: resp.status }, { status: 500 });
+    const upstreamStatus = resp.status >= 500 ? 502 : 500;
+    return NextResponse.json({ error: `SVV API feil: ${resp.status}`, status: upstreamStatus }, { status: upstreamStatus });
   }
 
   // SVV JSON structure (as documented at vegvesen.no/datautlevering)
-  const raw = await resp.json();
+  const raw = await resp.json() as SVVRawResponse;
   const k = raw.kjoretoydataListe?.[0];
   if (!k) {
     return NextResponse.json({ error: "Ingen data for dette kjøretøyet", status: 404 }, { status: 404 });
   }
 
   const result: SVVKjoretoy = {
-    regnr:     regnr.toUpperCase(),
+    regnr:     normalized,
     merke:     k.godkjenning?.tekniskGodkjenning?.tekniskeData?.generelt?.merke?.[0]?.merke ?? "UKJENT",
     modell:    k.godkjenning?.tekniskGodkjenning?.tekniskeData?.generelt?.handelsbetegnelse?.[0] ?? "",
-    aargang:   k.godkjenning?.tekniskGodkjenning?.tekniskeData?.generelt?.typegodkjenningsunderlag?.[0]?.sistEndretAr
-               ?? new Date().getFullYear(),
-    drivstoff: k.godkjenning?.tekniskGodkjenning?.tekniskeData?.motorOgDrivverk?.motor?.[0]?.drivstoff?.[0]?.kodeBeskrivelse?.toUpperCase() ?? "ANNET",
+    aargang:   k.godkjenning?.tekniskGodkjenning?.tekniskeData?.generelt?.typegodkjenningsunderlag?.[0]?.sistEndretAr ?? null,
+    drivstoff: ((): SVVKjoretoy["drivstoff"] => {
+      const raw = k.godkjenning?.tekniskGodkjenning?.tekniskeData?.motorOgDrivverk?.motor?.[0]?.drivstoff?.[0]?.kodeBeskrivelse?.toUpperCase();
+      const valid: SVVKjoretoy["drivstoff"][] = ["BENSIN", "DIESEL", "ELEKTRISK", "HYBRID", "ANNET"];
+      return valid.includes(raw as SVVKjoretoy["drivstoff"]) ? (raw as SVVKjoretoy["drivstoff"]) : "ANNET";
+    })(),
     drivlinje: normalizeDrivlinje(
       k.godkjenning?.tekniskGodkjenning?.tekniskeData?.motorOgDrivverk?.drivstoffOgGirkasse?.[0]?.drivhjulskode?.kodeBeskrivelse ?? ""
     ),
