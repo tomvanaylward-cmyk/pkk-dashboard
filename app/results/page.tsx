@@ -81,7 +81,9 @@ function ResultsContent() {
         </p>
         <h1 className={`text-3xl font-bold ${riskTxt} mb-1`}>
           {result.overall.toFixed(1)}×
-          <span className="text-base font-normal ml-2">enn gjennomsnittet</span>
+          <span className="text-base font-normal ml-2">
+            {result.overall >= 1.0 ? "høyere" : "lavere"} enn gjennomsnittet
+          </span>
         </h1>
         <p className="text-sm text-gray-600">
           {result.drivlinje} · {result.kmBucket} km · EU-frist:{" "}

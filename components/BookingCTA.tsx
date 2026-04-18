@@ -9,6 +9,7 @@ export default function BookingCTA() {
         <button
           disabled
           className="flex-1 bg-green text-white font-semibold py-3 px-4 rounded-lg opacity-60 cursor-not-allowed text-sm"
+          aria-label="Mekonomen — Book tid (kommer snart)"
           title="Kommer snart — vi inngår avtale med verksteder"
         >
           Mekonomen — Book tid
@@ -16,6 +17,7 @@ export default function BookingCTA() {
         <button
           disabled
           className="flex-1 bg-dark text-white font-semibold py-3 px-4 rounded-lg opacity-60 cursor-not-allowed text-sm"
+          aria-label="Snap Drive — Book tid (kommer snart)"
           title="Kommer snart"
         >
           Snap Drive — Book tid
