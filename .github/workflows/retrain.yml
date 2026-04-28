@@ -1,20 +1,19 @@
-name: Retrain PKK model & deploy
+name: Quarterly PKK retrain
 
 on:
   schedule:
-    - cron: "0 3 * * *"
-  workflow_dispatch:
+    # 1 Jan, 1 Apr, 1 Jul, 1 Oct — 04:00 UTC
+    - cron: "0 4 1 1,4,7,10 *"
+  workflow_dispatch:    # Allow manual trigger
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 jobs:
-  train-and-deploy:
+  retrain:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,34 +23,74 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.CLAUDE_PAT }}
 
-      - name: Set up Python
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
-        run: pip install -r scripts/requirements.txt
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('scripts/requirements.txt') }}
 
-      - name: Run training pipeline
+      - name: Check for new PKK data (smart incremental)
+        id: check_new_data
+        env:
+          GITHUB_TOKEN: ${{ secrets.CLAUDE_PAT }}
+        run: |
+          # List available ZIP files from SVV GitHub
+          LATEST=$(python3 -c "
+          import requests, os
+          headers = {'Authorization': f'Bearer {os.environ[\"GITHUB_TOKEN\"]}'}
+          r = requests.get(
+            'https://api.github.com/repos/vegvesen/periodisk-kjoretoy-kontroll/contents/',
+            headers=headers, timeout=20
+          )
+          files = sorted([f['name'] for f in r.json() if f['name'].endswith('.zip')], reverse=True)
+          print(files[0] if files else '')
+          ")
+          echo "latest_zip=$LATEST" >> $GITHUB_OUTPUT
+          echo "Latest SVV ZIP: $LATEST"
+
+      - name: Run ML training pipeline
         env:
           GITHUB_TOKEN: ${{ secrets.CLAUDE_PAT }}
         run: python scripts/train.py
 
+      - name: Copy coefficients to public/
+        run: cp docs/coefficients.json public/coefficients.json
+
+      - name: Validate AUC gate
+        run: |
+          python3 -c "
+          import json, sys
+          d = json.load(open('public/coefficients.json'))
+          auc = d['meta']['auc_mean']
+          print(f'AUC: {auc:.4f}')
+          if auc < 0.68:
+            print(f'FAIL: AUC {auc:.4f} < 0.68 threshold')
+            sys.exit(1)
+          print('AUC gate PASSED')
+          "
+
       - name: Commit updated coefficients
         run: |
-          git config user.name  "pkk-bot"
+          git config user.name  "pkk-retrain-bot"
           git config user.email "pkk-bot@users.noreply.github.com"
-          git stash
           git pull --rebase origin main
-          git stash pop
-          git add docs/coefficients.json
-          git diff --staged --quiet || git commit -m "chore: retrain model $(date -u +%Y-%m-%d)"
-          git push
+          git add -f docs/coefficients.json public/coefficients.json
+          git diff --staged --quiet || git commit -m "chore: quarterly retrain $(date -u +%Y-%m-%d) — AUC $(python3 -c "import json; print(json.load(open('public/coefficients.json'))['meta']['auc_mean'])")"
+          git push origin main
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.CLAUDE_PAT }}
-          publish_dir: ./docs
-          publish_branch: gh-pages
-          force_orphan: false
+      - name: Trigger Vercel deployment
+        if: success()
+        env:
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          if [ -n "$VERCEL_DEPLOY_HOOK" ]; then
+            curl -s -X POST "$VERCEL_DEPLOY_HOOK"
+            echo "Vercel deploy triggered"
+          else
+            echo "No VERCEL_DEPLOY_HOOK set — skipping"
+          fi

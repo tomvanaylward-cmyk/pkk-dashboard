@@ -1,10 +1,10 @@
 """
-PKK EU-kontroll — logistic regression pipeline v3
+PKK EU-kontroll — logistic regression pipeline v4
 - 80k rows per file (~480k total)
 - inspection_number feature (which inspection is this for the vehicle)
 - Fuel: BEV, Hybrid, Diesel, Petrol, Other
 - No fylke (national model)
-- Bootstrap CI (8 resamples)
+- 5-fold StratifiedKFold CV (replaces bootstrap CI)
 """
 
 import os, json, zipfile, io, requests, pandas as pd, numpy as np
@@ -14,6 +14,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from sklearn.metrics import roc_auc_score, classification_report
+from sklearn.model_selection import StratifiedKFold, cross_val_score
 
 GITHUB_API = "https://api.github.com/repos/vegvesen/periodisk-kjoretoy-kontroll/contents/"
 RAW_BASE   = "https://raw.githubusercontent.com/vegvesen/periodisk-kjoretoy-kontroll/main/"
@@ -21,6 +22,11 @@ RAW_BASE   = "https://raw.githubusercontent.com/vegvesen/periodisk-kjoretoy-kont
 # Use GITHUB_TOKEN to avoid rate limiting (60/hr unauthenticated → 5000/hr authenticated)
 _GH_TOKEN   = os.environ.get("GITHUB_TOKEN", "")
 _GH_HEADERS = {"Authorization": f"Bearer {_GH_TOKEN}"} if _GH_TOKEN else {}
+
+# Feature lists — shared by train_model(), cross_validate_pipeline(), failure_fingerprint()
+# Updated in Task 2 to include km_bucket and km_per_year
+_CAT_FEATURES = ["brand", "fuel", "ctrl_type", "weight", "km_bucket"]
+_NUM_FEATURES = ["km_per_year", "age", "insp_num"]
 
 def list_zip_files():
     resp = requests.get(GITHUB_API, headers=_GH_HEADERS, timeout=20)
@@ -107,17 +113,28 @@ def compute_inspection_number(df, now_year):
     insp_num = 1 + ((age - 4) / interval).clip(lower=0).apply(np.floor)
     return insp_num.clip(1, 15).fillna(1)
 
+def km_to_bucket(km: float) -> str:
+    """Categorise km into 50k-width buckets matching PKK rounding. NaN → NaN (dropped later)."""
+    if pd.isna(km):   return float("nan")  # caught by dropna on km_per_year
+    if km < 50_000:   return "0-50k"
+    if km < 100_000:  return "50-100k"
+    if km < 150_000:  return "100-150k"
+    return "150k+"
+
 def engineer_features(df):
     now_year = datetime.now().year
     out = pd.DataFrame(index=df.index)
     out["brand"] = df["Kjøretøymerke"].astype(str).str.strip().str.upper().str[:30]
     out["fuel"]  = df["Drivstofftype"].apply(classify_fuel)
-    out["km"]    = pd.to_numeric(df["Kilometerstand"], errors="coerce").clip(0, 500_000)
     reg_no  = pd.to_numeric(df.get("Første gang registrert i Norge"), errors="coerce")
     reg_wld = pd.to_numeric(df.get("Første gang registrert"), errors="coerce")
     reg     = reg_no.fillna(reg_wld)
     age     = (now_year - reg).where(lambda x: (x >= 0) & (x <= 50))
     out["age"] = age.clip(0, 30)
+    # Raw km — used to compute derived features, not used directly as a model feature
+    raw_km = pd.to_numeric(df["Kilometerstand"], errors="coerce").clip(0, 500_000)
+    out["km_bucket"]   = raw_km.apply(km_to_bucket)
+    out["km_per_year"] = (raw_km / out["age"].clip(lower=1)).clip(0, 80_000).round(0)
     out["insp_num"] = compute_inspection_number(df, now_year)
     ct = df["PKK Kontrolltype"].astype(str).str.strip().str.upper()
     out["ctrl_type"] = np.where(ct.str.startswith("E"), "E", "P")
@@ -130,7 +147,7 @@ def engineer_features(df):
     mask = approved.isna() & num.isin([0.0,1.0])
     approved[mask] = num[mask]
     out["approved"] = approved
-    out = out.dropna(subset=["km","age","approved"]).copy()
+    out = out.dropna(subset=["km_per_year", "age", "approved"]).copy()
     out["approved"] = out["approved"].astype(int)
     out["brand"]    = out["brand"].fillna("UNKNOWN")
     top_brands = out["brand"].value_counts().head(50).index
@@ -142,8 +159,8 @@ def engineer_features(df):
 def train_model(feat_df):
     X = feat_df.drop(columns=["approved"])
     y = feat_df["approved"]
-    cat_features = ["brand","fuel","ctrl_type","weight"]
-    num_features = ["km","age","insp_num"]
+    cat_features = _CAT_FEATURES
+    num_features = _NUM_FEATURES
     pre = ColumnTransformer([
         ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), cat_features),
         ("num", StandardScaler(), num_features),
@@ -160,116 +177,88 @@ def train_model(feat_df):
     print(f"Train AUC: {auc:.4f}")
     return model, auc, X
 
-def bootstrap_ci(feat_df, n_boot=8):
-    print(f"Bootstrap CI ({n_boot} resamples)...")
-    cat_features = ["brand","fuel","ctrl_type","weight"]
-    num_features = ["km","age","insp_num"]
+def cross_validate_pipeline(feat_df):
+    """5-fold stratified CV. Returns (mean_auc, std_auc, fold_scores)."""
+    cat_features = _CAT_FEATURES
+    num_features = _NUM_FEATURES
+    X = feat_df.drop(columns=["approved"])
+    y = feat_df["approved"]
+    pre = ColumnTransformer([
+        ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), cat_features),
+        ("num", StandardScaler(), num_features),
+    ])
+    pipeline = Pipeline([
+        ("pre", pre),
+        ("clf", LogisticRegression(max_iter=500, C=1.0,
+                                   class_weight="balanced", solver="saga")),
+    ])
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    n_jobs = int(os.environ.get("CV_N_JOBS", "-1"))
+    scores = cross_val_score(pipeline, X, y, cv=cv, scoring="roc_auc", n_jobs=n_jobs)
+    print(f"5-fold CV AUC: {scores.mean():.4f} ± {scores.std():.4f}")
+    print(f"  Folds: {[round(s, 4) for s in scores.tolist()]}")
+    return float(scores.mean()), float(scores.std()), scores.tolist()
 
-    def fit_lr(X, y):
-        pre = ColumnTransformer([
-            ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), cat_features),
-            ("num", StandardScaler(), num_features),
-        ])
-        m = Pipeline([("pre", pre),
-                      ("clf", LogisticRegression(max_iter=300, C=1.0,
-                                                 class_weight="balanced", solver="saga"))])
-        m.fit(X, y)
-        return m
-
-    X0 = feat_df.drop(columns=["approved"])
-    y0 = feat_df["approved"]
-    m0 = fit_lr(X0, y0)
-    names = list(m0.named_steps["pre"].get_feature_names_out())
-    n_feat = len(names)
-    boot_coefs = np.zeros((n_boot, n_feat))
-
-    for i in range(n_boot):
-        idx = np.random.choice(len(feat_df), size=len(feat_df), replace=True)
-        df_b = feat_df.iloc[idx]
-        m_b = fit_lr(df_b.drop(columns=["approved"]), df_b["approved"])
-        names_b = list(m_b.named_steps["pre"].get_feature_names_out())
-        coefs_b = m_b.named_steps["clf"].coef_[0]
-        for j, nm in enumerate(names):
-            if nm in names_b:
-                boot_coefs[i, j] = coefs_b[names_b.index(nm)]
-        print(f"  Bootstrap {i+1}/{n_boot}")
-
-    stds = boot_coefs.std(axis=0)
-    return dict(zip(names, stds.tolist())), names
-
-def extract_coefficients(model, feat_df, auc, stds, names):
+def extract_coefficients(model, feat_df, cv_mean, cv_std, cv_scores):
     clf   = model.named_steps["clf"]
     pre   = model.named_steps["pre"]
+    names = list(pre.get_feature_names_out())
     coefs = clf.coef_[0]
-    z     = 1.96
 
-    def group_with_ci(prefix):
-        out = {}
-        for n, c in zip(names, coefs):
-            if n.startswith(prefix):
-                label = n[len(prefix):]
-                se = stds.get(n, 0)
-                out[label] = {
-                    "coef": round(float(c), 4),
-                    "lo":   round(float(c) - z*se, 4),
-                    "hi":   round(float(c) + z*se, 4),
-                }
-        return out
+    def group_coefs(prefix):
+        return {n[len(prefix):]: round(float(c), 4)
+                for n, c in zip(names, coefs) if n.startswith(prefix)}
 
     sc = pre.named_transformers_["num"]
-    num_map = {n: c for n, c in zip(names, coefs) if n.startswith("num__")}
-
-    insp_pass = feat_df.groupby("insp_num")["approved"].agg(["mean","count"])
+    insp_pass = feat_df.groupby("insp_num")["approved"].agg(["mean", "count"])
     insp_rates = {
-        int(k): {"pass_rate": round(float(v["mean"]),4), "n": int(v["count"])}
+        int(k): {"pass_rate": round(float(v["mean"]), 4), "n": int(v["count"])}
         for k, v in insp_pass.iterrows()
         if v["count"] >= 100
     }
-
     brand_fuel = {}
     for brand in feat_df["brand"].unique():
-        sub = feat_df[feat_df["brand"]==brand]
+        sub = feat_df[feat_df["brand"] == brand]
         dominant = sub["fuel"].value_counts()
         if len(dominant) > 0:
             top = dominant.index[0]
-            top_pct = dominant.iloc[0] / len(sub)
             brand_fuel[brand] = {
                 "dominant": top,
-                "exclusive": bool(top_pct > 0.95)
+                "exclusive": bool(dominant.iloc[0] / len(sub) > 0.95),
             }
-
     return {
         "meta": {
-            "trained_at": datetime.now(timezone.utc).isoformat(),
-            "n_samples":  int(len(feat_df)),
-            "auc_roc":    round(float(auc), 4),
-            "pass_rate":  round(float(feat_df["approved"].mean()), 4),
-            "model":      "Logistic Regression v3",
+            "trained_at":   datetime.now(timezone.utc).isoformat(),
+            "n_samples":    int(len(feat_df)),
+            "auc_mean":     round(cv_mean, 4),
+            "auc_std":      round(cv_std,  4),
+            "auc_folds":    [round(s, 4) for s in cv_scores],
+            "pass_rate":    round(float(feat_df["approved"].mean()), 4),
+            "model":        "LogReg v4 — 5-fold CV",
+            "calibrated":   False,
         },
-        "intercept":  round(float(clf.intercept_[0]), 4),
-        "brand":      group_with_ci("cat__brand_"),
-        "fuel":       group_with_ci("cat__fuel_"),
-        "ctrl_type":  group_with_ci("cat__ctrl_type_"),
-        "weight":     group_with_ci("cat__weight_"),
+        "intercept":       round(float(clf.intercept_[0]), 4),
+        "brand":           group_coefs("cat__brand_"),
+        "fuel":            group_coefs("cat__fuel_"),
+        "ctrl_type":       group_coefs("cat__ctrl_type_"),
+        "weight":          group_coefs("cat__weight_"),
+        "km_bucket":       group_coefs("cat__km_bucket_"),
         "numeric": {
-            "km_scaled":    round(float(num_map.get("num__km",      0)), 6),
-            "age_scaled":   round(float(num_map.get("num__age",     0)), 6),
-            "insp_scaled":  round(float(num_map.get("num__insp_num",0)), 6),
-            "km_corr":      round(float(feat_df["km"].corr(feat_df["approved"])),       4),
-            "age_corr":     round(float(feat_df["age"].corr(feat_df["approved"])),      4),
-            "insp_corr":    round(float(feat_df["insp_num"].corr(feat_df["approved"])), 4),
+            "km_per_year_scaled": round(float(dict(zip(names, coefs)).get("num__km_per_year", 0)), 6),
+            "age_scaled":         round(float(dict(zip(names, coefs)).get("num__age",         0)), 6),
+            "insp_scaled":        round(float(dict(zip(names, coefs)).get("num__insp_num",     0)), 6),
         },
+        # Scaler indices follow _NUM_FEATURES order: 0=km_per_year, 1=age, 2=insp_num
         "scaler": {
-            "km_mean":    round(float(sc.mean_[0]),  2),
-            "km_std":     round(float(sc.scale_[0]), 2),
-            "age_mean":   round(float(sc.mean_[1]),  2),
-            "age_std":    round(float(sc.scale_[1]), 2),
-            "insp_mean":  round(float(sc.mean_[2]),  2),
-            "insp_std":   round(float(sc.scale_[2]), 2),
+            "km_per_year_mean": round(float(sc.mean_[0]),  2),
+            "km_per_year_std":  round(float(sc.scale_[0]), 2),
+            "age_mean":         round(float(sc.mean_[1]),  2),
+            "age_std":          round(float(sc.scale_[1]), 2),
+            "insp_mean":        round(float(sc.mean_[2]),  2),
+            "insp_std":         round(float(sc.scale_[2]), 2),
         },
         "insp_pass_rates": insp_rates,
         "brand_fuel":      brand_fuel,
-        "pass_rate":       round(float(feat_df["approved"].mean()), 4),
     }
 
 def failure_fingerprint(feat_df, raw_df):
@@ -286,8 +275,8 @@ def failure_fingerprint(feat_df, raw_df):
         "Ant 2-3er kap 9":  "Checks during drive",
         "Ant 2-3er kap 10": "Environment",
     }
-    cat_features = ["brand", "fuel", "ctrl_type", "weight"]
-    num_features = ["km", "age", "insp_num"]
+    cat_features = _CAT_FEATURES
+    num_features = _NUM_FEATURES
     raw_aligned = raw_df.iloc[:len(feat_df)].copy()
     raw_aligned.index = feat_df.index
     fingerprint = {}
@@ -305,16 +294,30 @@ def failure_fingerprint(feat_df, raw_df):
             print(f"  Skipping {name} — baseline too low ({baseline:.3f})")
             continue
         print(f"  Training {name}: baseline={baseline:.3f}, positives={y_chap.sum()}")
-        X = feat_df.drop(columns=["approved"])
-        pre = ColumnTransformer([
+        X_ch = feat_df.drop(columns=["approved"])
+
+        # 5-fold CV for this chapter (validation AUC)
+        cv_chapter = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+        cv_auc = cross_val_score(
+            Pipeline([
+                ("pre", ColumnTransformer([
+                    ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), cat_features),
+                    ("num", StandardScaler(), num_features),
+                ])),
+                ("clf", LogisticRegression(max_iter=500, C=1.0, solver="saga")),
+            ]),
+            X_ch, y_chap, cv=cv_chapter, scoring="roc_auc", n_jobs=1
+        )
+        print(f"  {name}: AUC {cv_auc.mean():.3f} ± {cv_auc.std():.3f}")
+
+        # Train final model on full data for coefficient extraction
+        pre_full = ColumnTransformer([
             ("cat", OneHotEncoder(handle_unknown="ignore", sparse_output=False), cat_features),
             ("num", StandardScaler(), num_features),
         ])
-        m = Pipeline([
-            ("pre", pre),
-            ("clf", LogisticRegression(max_iter=500, C=1.0, solver="saga"))
-        ])
-        m.fit(X, y_chap)
+        m = Pipeline([("pre", pre_full),
+                      ("clf", LogisticRegression(max_iter=500, C=1.0, solver="saga"))])
+        m.fit(X_ch, y_chap)
         feat_names = list(m.named_steps["pre"].get_feature_names_out())
         coefs      = m.named_steps["clf"].coef_[0]
         coef_map   = dict(zip(feat_names, coefs))
@@ -325,21 +328,25 @@ def failure_fingerprint(feat_df, raw_df):
         fingerprint[name] = {
             "baseline":  baseline,
             "intercept": round(float(m.named_steps["clf"].intercept_[0]), 4),
+            "auc_mean":  round(float(cv_auc.mean()), 4),
+            "auc_std":   round(float(cv_auc.std()),  4),
             "brand":     g("cat__brand_"),
             "fuel":      g("cat__fuel_"),
             "ctrl_type": g("cat__ctrl_type_"),
+            "km_bucket": g("cat__km_bucket_"),
             "numeric": {
-                "km_scaled":   round(float(coef_map.get("num__km",      0)), 6),
-                "age_scaled":  round(float(coef_map.get("num__age",     0)), 6),
-                "insp_scaled": round(float(coef_map.get("num__insp_num",0)), 6),
+                "km_per_year_scaled": round(float(coef_map.get("num__km_per_year", 0)), 6),
+                "age_scaled":         round(float(coef_map.get("num__age",         0)), 6),
+                "insp_scaled":        round(float(coef_map.get("num__insp_num",    0)), 6),
             },
+            # Scaler indices follow _NUM_FEATURES order: 0=km_per_year, 1=age, 2=insp_num
             "scaler": {
-                "km_mean":   round(float(sc.mean_[0]),  2),
-                "km_std":    round(float(sc.scale_[0]), 2),
-                "age_mean":  round(float(sc.mean_[1]),  2),
-                "age_std":   round(float(sc.scale_[1]), 2),
-                "insp_mean": round(float(sc.mean_[2]),  2),
-                "insp_std":  round(float(sc.scale_[2]), 2),
+                "km_per_year_mean": round(float(sc.mean_[0]),  2),
+                "km_per_year_std":  round(float(sc.scale_[0]), 2),
+                "age_mean":         round(float(sc.mean_[1]),  2),
+                "age_std":          round(float(sc.scale_[1]), 2),
+                "insp_mean":        round(float(sc.mean_[2]),  2),
+                "insp_std":         round(float(sc.scale_[2]), 2),
             },
         }
     return fingerprint
@@ -399,27 +406,60 @@ def defect_analysis(raw_df):
         "by_fuel":           by_fuel,
     }
 
+DVSA_FACTORS_PATH = "scripts/dvsa_factors.json"
+
+def load_dvsa_factors() -> dict:
+    """Load pre-computed UK DVSA model factors if available. Returns empty dict if missing."""
+    if not os.path.exists(DVSA_FACTORS_PATH):
+        print(f"INFO: {DVSA_FACTORS_PATH} not found — model_adjustments will be empty.")
+        print("      Run scripts/dvsa_factors.py first to generate model-level factors.")
+        return {}
+    with open(DVSA_FACTORS_PATH) as f:
+        data = json.load(f)
+    factors = data.get("factors", {})
+    n_models = sum(len(v) for v in factors.values())
+    print(f"Loaded DVSA factors: {len(factors)} makes, {n_models} models")
+    return factors
+
+
 def main():
     os.makedirs("docs", exist_ok=True)
-    print("=== PKK Logistic Regression pipeline v3 ===")
+    os.makedirs("public", exist_ok=True)
+    print("=== PKK LogReg pipeline v4 — 5-fold CV ===")
     raw     = load_all_data(max_files=6, sample_per_file=80000)
     feat_df = engineer_features(raw)
     if len(feat_df) < 1000:
         raise RuntimeError(f"Too few rows ({len(feat_df)})")
-    model, auc, X = train_model(feat_df)
-    stds, names   = bootstrap_ci(feat_df, n_boot=8)
-    coefs         = extract_coefficients(model, feat_df, auc, stds, names)
+
+    print("\n=== Cross-validation ===")
+    cv_mean, cv_std, cv_scores = cross_validate_pipeline(feat_df)
+
+    # AUC gate — fail fast if model quality is too low
+    if cv_mean < 0.68:
+        raise RuntimeError(f"AUC too low: {cv_mean:.4f} < 0.68 threshold")
+    print(f"AUC gate passed: {cv_mean:.4f} >= 0.68")
+
+    print("\n=== Training final model on full data ===")
+    model, _, X = train_model(feat_df)
+
+    coefs = extract_coefficients(model, feat_df, cv_mean, cv_std, cv_scores)
+
+    dvsa_factors = load_dvsa_factors()
+    coefs["model_adjustments"] = dvsa_factors
+    coefs["meta"]["dvsa_makes"]  = len(dvsa_factors)
+    coefs["meta"]["dvsa_models"] = sum(len(v) for v in dvsa_factors.values())
+
     print("\n=== Failure fingerprint (11 chapter models) ===")
     coefs["fingerprint"] = failure_fingerprint(feat_df, raw)
     coefs["defects"]     = defect_analysis(raw)
+
+    out_path = "public/coefficients.json"
+    with open(out_path, "w") as f:
+        json.dump(coefs, f, indent=2, ensure_ascii=False)
     with open("docs/coefficients.json", "w") as f:
         json.dump(coefs, f, indent=2, ensure_ascii=False)
-    print("\nSaved docs/coefficients.json")
+    print(f"\nSaved {out_path}")
     print(json.dumps(coefs["meta"], indent=2))
-    d = coefs["defects"]
-    print(f"Top defect: {d['chapters'][0]['name']} ({d['chapters'][0]['rate_all']*100:.1f}% of all inspections)")
-    print(f"Brand→fuel mappings: {len(coefs['brand_fuel'])} brands")
-    print(f"Fingerprint chapters trained: {len(coefs['fingerprint'])}/11")
 
 if __name__ == "__main__":
     main()
