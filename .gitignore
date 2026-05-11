@@ -1,0 +1,23 @@
+.github/
+docs/
+scripts/
+README.md
+
+# Next.js
+.next/
+out/
+
+# Dependencies
+node_modules/
+
+# Environment variables (never commit)
+.env.local
+.env.*.local
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+.vercel

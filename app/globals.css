@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --dark:   #113824;
+  --green:  #267C4F;
+  --yellow: #FFD816;
+  --mint:   #CBE0D5;
+  --pale:   #E9F3E6;
+}
+
+body {
+  background-color: var(--pale);
+}

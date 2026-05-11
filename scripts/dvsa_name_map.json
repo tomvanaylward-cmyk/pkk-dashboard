@@ -1,0 +1,37 @@
+{
+  "make_map": {
+    "VOLKSWAGEN": "VOLKSWAGEN",
+    "TOYOTA":     "TOYOTA",
+    "BMW":        "BMW",
+    "MERCEDES-BENZ": "MERCEDES-BENZ",
+    "FORD":       "FORD",
+    "AUDI":       "AUDI",
+    "VAUXHALL":   "OPEL",
+    "PEUGEOT":    "PEUGEOT",
+    "RENAULT":    "RENAULT",
+    "NISSAN":     "NISSAN",
+    "HYUNDAI":    "HYUNDAI",
+    "KIA":        "KIA",
+    "SKODA":      "SKODA",
+    "SEAT":       "SEAT",
+    "HONDA":      "HONDA",
+    "VOLVO":      "VOLVO",
+    "MAZDA":      "MAZDA",
+    "MITSUBISHI": "MITSUBISHI",
+    "SUBARU":     "SUBARU",
+    "SUZUKI":     "SUZUKI"
+  },
+  "chapter_map": {
+    "1": "Identification & documents",
+    "2": "Brakes",
+    "3": "Steering",
+    "4": "Visibility",
+    "5": "Lights & electrical",
+    "6": "Axles, wheels & tyres",
+    "7": "Chassis & body",
+    "8": "Other equipment",
+    "9": "Noise & emissions",
+    "10": "Checks during drive",
+    "11": "Environment"
+  }
+}
